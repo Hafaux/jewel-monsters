@@ -1,23 +1,14 @@
 import Assets from '../core/AssetManager';
 import Scene from './Scene';
-import { Text } from 'pixi.js';
 import config from '../config';
+import { Text, Loader } from 'pixi.js';
+import LoadingBar from '../components/LoadingBar';
 
 export default class Splash extends Scene {
   constructor() {
     super();
 
-    this.loadingText = new Text('0%', {
-      fontSize: 75,
-      fill: 0xffc900,
-    });
-
     this.config = config.scenes.Splash;
-
-    this.loadingText.anchor.set(0.5);
-    this.loadingText.x = this.width / 2;
-    this.loadingText.y = this.height / 2;
-    this.addChild(this.loadingText);
   }
 
   get finish() {
@@ -26,7 +17,17 @@ export default class Splash extends Scene {
 
   preload() {
     const images = {
-      logo: Assets.images.logo,
+      'char-body': Assets.images['char-body'],
+      'char-eye': Assets.images['char-eye'],
+      'char-lid-bottom': Assets.images['char-lid-bottom'],
+      'char-lid-top': Assets.images['char-lid-top'],
+      'fire-glow': Assets.images['fire-glow'],
+      'loading-bar': Assets.images['loading-bar'],
+      'loading-bar-glow': Assets.images['loading-bar-glow'],
+      'loading-bar-mask-left': Assets.images['loading-bar-mask-left'],
+      'loading-bar-mask-right': Assets.images['loading-bar-mask-right'],
+      'loading-bar-test': Assets.images['loading-bar-test'],
+      fire: Assets.images.fire,
     };
     const sounds = {
       
@@ -36,11 +37,8 @@ export default class Splash extends Scene {
   }
 
   onResize(width, height) { // eslint-disable-line no-unused-vars
-    this.loadingText.x = width / 2;
-    this.loadingText.y = (height / 2) + 500;
   }
 
-  onLoadProgress(val) {
-    this.loadingText.text = `${val}%`;
+  onLoadProgress() {
   }
 }

@@ -20,6 +20,9 @@ export default {
     Splash: {
       hideDelay: 0,
     },
+    Loading: {
+      hideDelay: 0,
+    },
   },
   assets: {
     root: '/',

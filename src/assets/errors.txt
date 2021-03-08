@@ -1,0 +1,3 @@
+[2021-2-19 07:55:46] layer "+XP": Expected Either a default asset specification or a layer asset specification but "+" found.
+[2021-2-19 07:55:46] layer "+XP copy": Expected Either a default asset specification or a layer asset specification but "+" found.
+[2021-2-19 07:55:46] layer "+XP copy 2": Expected Either a default asset specification or a layer asset specification but "+" found.

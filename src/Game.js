@@ -1,3 +1,4 @@
+import Loading from './scenes/Loading';
 import Splash from './scenes/Splash';
 import Play from './scenes/Play';
 import { Container } from 'pixi.js';
@@ -27,6 +28,8 @@ export default class Game extends Container {
 
   async start() {
     await this.switchScene(Splash, { scene: 'splash' });
+    await this.currentScene.finish;
+    await this.switchScene(Loading, { scene: 'loading' });
     await this.currentScene.finish;
 
     this.switchScene(Play, { scene: 'play' });
