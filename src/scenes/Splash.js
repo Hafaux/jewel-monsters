@@ -1,8 +1,6 @@
 import Assets from '../core/AssetManager';
 import Scene from './Scene';
 import config from '../config';
-import { Text, Loader } from 'pixi.js';
-import LoadingBar from '../components/LoadingBar';
 
 export default class Splash extends Scene {
   constructor() {

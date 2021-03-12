@@ -1,32 +1,391 @@
-import { Sprite } from 'pixi.js';
+import { Container, Text } from 'pixi.js';
 import Scene from './Scene';
 import gsap from 'gsap';
 import Fire from '../components/Fire';
 import Character from '../components/Character';
-import LoadingBar from '../components/LoadingBar';
+import Moves from '../components/Moves';
+import Symbol from '../components/Symbol';
 
 export default class Play extends Scene {
   async onCreated() {
+    this.draggedSymbol = null;
+    this.transition = false;
+    this.symbols = [];
+    this.config = {
+      typesOfSymbols: 6,
+      symbolSize: 100,
+      fieldSize: 6,
+      maxMoves: 20,
+    };
+    this.currentMoves = this.config.maxMoves;
+    this.currentXp = 0;
 
-    // const footer = new Footer();
-    // footer.x = - window.innerWidth / 2;
-    // footer.y = window.innerHeight / 2 - footer.height;
-    // this.addChild(footer);
+    this.fireContainer = this._addFire();
+    this.charContaienr = this._addCharacters();
+    this.movesContainer = this._addMoves();
+    this.symbolContainer = this._addPlayingField();
 
-    this._addFire();
-    this._addLoadingBar();
-    this._addCharacters();
+    window.addEventListener('pointerup', () => {
+      if (this.draggedSymbol === null) return;
+
+      this.draggedSymbol.sprite.alpha = 1;
+      this.draggedSymbol.scale.set(1);
+    });
   }
 
-  _addLoadingBar() {
-    const loadingBar = new LoadingBar();
+  _checkField(generating = false) {
+    let match = false;
+    
+    if (this._checkRow(generating)) match = true;
+    if (generating && match) return match;
 
-    this.addChild(loadingBar);
+    if (this._checkColumn(generating)) match = true;
+    if (generating && match) return match;
 
-    loadingBar.update(70);
+    if (match) {
+      setTimeout(() => {
+        this._moveSymbolsDown();
+      }, 250);
+    } else {
+      this.transition = false;
+    }
+
+    return match;
+  }
+
+  _areSymbolsSame(symbolArray) {
+    return symbolArray.every((symbol) => {
+      return symbol.type === symbolArray[0].type && !symbol.isCleared;
+    });
+  }
+
+  async _xpOnMatch(xp, x, y) {
+    const text = new Text(`${xp} xp`, {
+      fill: 'yellow',
+      fontWeight: 'bold',
+      fontSize: 30,
+      strokeThickness: 3
+    });
+    text.anchor.set(0.5);
+    text.position.x = -(this.config.symbolSize * this.config.fieldSize / 2) + 50 + x;
+    text.position.y = -250 + y;
+    
+    this.addChild(text);
+
+    gsap.fromTo(text, { alpha: 0 }, { alpha: 1 });
+    await gsap.fromTo(text.position, { y: -250 + y + 20 }, { y: -250 + y });
+    gsap.to(text, { alpha: 0 });
+    gsap.to(text.position, {
+      y: '-=20',
+      // duration: 1,
+      onComplete: () => {
+        this.removeChild(text);
+      }
+    });
+  }
+
+  _checkMatch(symbolArray, prevMatch, generating = false) {
+    let match = prevMatch;
+
+    if (this._areSymbolsSame(symbolArray)) {
+      match = true;
+      if (generating) return match;
+
+      const xpPos = symbolArray[Math.floor(symbolArray.length / 2)].position;
+      const xp = 300 + ((symbolArray.length - 3) * 150);
+
+      this._xpOnMatch(xp, xpPos.x, xpPos.y);
+
+      this._increaseXp();
+      symbolArray.forEach((symbol) => {
+        symbol.clear();
+      });
+    }
+
+    return match;
+  }
+
+  _checkRow(generating = false) {
+    let match = false;
+    const size = this.config.fieldSize;
+
+    for (let rowIndex = 0; rowIndex < size; rowIndex++) {
+      for (let i = 0; i < (size - 2); i++) {
+        const offsetIndex = rowIndex * size;
+        const startIndex = i + offsetIndex;
+        const endIndex = size + offsetIndex;
+
+        for (let start = startIndex, end = endIndex; (end - start) >= 3; end--) {
+          const subRow = this.symbols.slice(start, end);
+
+          match = this._checkMatch(subRow, match, generating);
+          if (generating && match) return match;
+        }
+      }
+    }
+
+    return match;
+  }
+
+  _checkColumn(generating = false) {
+    let match = false;
+    const size = this.config.fieldSize;
+
+    for (let colIndex = 0; colIndex < size; colIndex++) {
+      const column = [];
+
+      for (let i = 0; i < size * size; i += size) {
+        column.push(this.symbols[i + colIndex]);
+      }
+      
+      for (let i = 0; i < (size - 2); i++) { 
+        for (let start = i, end = size; (end - start) >= 3; end--) {
+          const subColumn = column.slice(start, end);
+
+          match = this._checkMatch(subColumn, match, generating);
+          if (generating && match) return match;
+        }
+      }
+    }
+
+    return match;
+  }
+
+  _checkThreeRow() {
+    let match = false;
+
+    for (let i = 0; i < this.symbols.length; i++) {
+      if ((i % this.config.fieldSize) + 2 >= this.config.fieldSize) continue;
+
+      const arr = [this.symbols[i], this.symbols[i + 1], this.symbols[i + 2]];
+
+      if (arr.every((val) => val.type === this.symbols[i].type && !val.isCleared)) {
+        match = true;
+        // this._increaseXp();
+        arr.forEach((symbol) => {
+          symbol.clear();
+        });
+      }
+    }
+
+    return match;
+  }
+
+  _increaseXp(bonusXp) {
+    this.currentXp += bonusXp;
+  }
+
+  _decrementMoves() {
+    this.movesContainer.updateMoves(--this.currentMoves);
+  }
+
+  async __generateNewSymbols(symbolsToGenerate) {
+    const size = this.config.fieldSize;
+    const fallDuration = 1;
+    let tween = null;
+
+    for (let col = 0; col < symbolsToGenerate.length; col++) {
+      const cleared = symbolsToGenerate[col];
+
+      for (let i = cleared - 1; i >= 0; i--) {
+        const index = col + size * i;
+        const oldSymbol = this.symbols[index];
+        const newSymbol = this._getRandomSymbol(index);
+  
+        newSymbol.position.x = col * this.config.symbolSize;
+  
+        const posY = i * this.config.symbolSize;
+  
+        this.transition = true;
+  
+        tween = gsap.fromTo(newSymbol.position, {
+          y: posY - 500,
+        }, {
+          y: posY,
+          ease: 'power1.out',
+          duration: fallDuration,
+        });
+  
+        this.symbols[index] = newSymbol;
+  
+        this.symbolContainer.removeChild(oldSymbol);
+        this.symbolContainer.addChild(newSymbol);
+      }
+    }
+
+    await tween;
+    this._checkField();
+  }
+
+  _moveSymbolsDown() {
+    const size = this.config.fieldSize;
+    const fallingDuration = 0.7;
+    const symbolsToGenerate = [];
+
+    for (let i = size * size - size; i < size * size; i++) {
+      let clearedSymbols = 0;
+
+      for (let j = i; j >= 0; j -= size) {
+        if (this.symbols[j].isCleared) {
+          clearedSymbols++;
+
+          let symbolsOnTop = 0;
+          for (let k = j; k >= 0; k -= size) {
+            if (!this.symbols[k].isCleared) symbolsOnTop++;
+          }
+          
+          this.symbols[j].position.y -= symbolsOnTop * this.config.symbolSize;
+        
+          continue;
+        }
+
+        if (!clearedSymbols) continue;
+        this.transition = true;
+
+        gsap.to(this.symbols[j].position, {
+          y: `+=${clearedSymbols * this.config.symbolSize}`,
+          ease: 'bounce',
+          duration: fallingDuration,
+        });
+
+        const newIndex = j + clearedSymbols * this.config.fieldSize;
+        this._swapSymbolsInArray(newIndex, j);
+      }
+      symbolsToGenerate.push(clearedSymbols);
+    }
+    this.__generateNewSymbols(symbolsToGenerate);
+  }
+
+  _swapSymbolsInArray(firstIndex, secondIndex) {
+    const tempSymbol = this.symbols[firstIndex];
+
+    this.symbols[firstIndex] = this.symbols[secondIndex];
+    this.symbols[firstIndex].updateIndex(firstIndex);
+    this.symbols[secondIndex] = tempSymbol;
+    this.symbols[secondIndex].updateIndex(secondIndex);
+  }
+
+  async _onPointerUp(symbol) {
+    if (this.draggedSymbol === null || this.transition) return;
+
+    this.draggedSymbol.sprite.alpha = 1;
+    this.draggedSymbol.scale.set(1);
+
+    if (this.draggedSymbol.id === symbol.id) return;
+
+    await this._moveSymbols(this.draggedSymbol, symbol);
+    this.transition = true;
+    const match = this._checkField();
+
+    if (!match) {
+      this._moveSymbols(this.draggedSymbol, symbol, 'power1.inOut');
+    } else {
+      this.transition = false;
+      this._decrementMoves();
+    }
+
+    this.draggedSymbol = null;
+  }
+
+  async _moveSymbols(symbol1, symbol2, ease = 'power1.inOut') {
+    this.transition = true;
+
+    const tempPos = {
+      x: symbol1.position.x,
+      y: symbol1.position.y,
+    };
+
+    const tempId = symbol1.id;
+
+    [this.symbols[symbol1.id], this.symbols[symbol2.id]] 
+      = [this.symbols[symbol2.id], this.symbols[symbol1.id]];
+
+    symbol1.updateIndex(symbol2.id);
+    symbol2.updateIndex(tempId);
+
+    gsap.to(symbol1.position, {
+      x: symbol2.position.x,
+      y: symbol2.position.y,
+      duration: 0.3,
+      ease,
+    });
+
+    await gsap.to(symbol2.position, {
+      x: tempPos.x,
+      y: tempPos.y,
+      duration: 0.3,
+      ease,
+    });
+
+    this.transition = false;
+  } 
+
+  _onPointerDown(symbol) {
+    if (this.transition) return;
+
+    this.draggedSymbol = symbol;
+    this.draggedSymbol.sprite.alpha = 0.8;
+    this.draggedSymbol.scale.set(0.8);
+  }
+
+  _getRandomSymbol(index) {
+    const symbolType = Math.floor(Math.random() * this.config.typesOfSymbols + 1);
+    // const symbolType = Math.floor(Math.random() * 3 + 1);
+
+    const symbol = new Symbol(symbolType, index);
+
+    symbol.on('pointerdown', () => {
+      this._onPointerDown(symbol);
+    });
+    symbol.on('pointerup', () => {
+      this._onPointerUp(symbol);
+    });
+
+    return symbol;
+  }
+
+  _generateNewField() {
+    const symbolContainer = new Container();
+    this.symbols = [];
+
+    for (let i = 0; i < this.config.fieldSize * this.config.fieldSize; i++) {
+      const symbol = this._getRandomSymbol(i);
+
+      symbol.position.x = this.config.symbolSize * (i % this.config.fieldSize);
+      symbol.position.y = this.config.symbolSize * (Math.floor(i / this.config.fieldSize));
+      symbolContainer.addChild(symbol);
+
+      this.symbols.push(symbol);
+    }
+
+    return symbolContainer;
+  }
+
+  _addPlayingField() {
+    let symbolContainer = null;
+    do {
+      symbolContainer = this._generateNewField();
+    } while (this._checkField(true));
+
+    symbolContainer.position.y = -250;
+    symbolContainer.position.x = -(this.config.symbolSize * this.config.fieldSize / 2) + 50;
+    this.addChild(symbolContainer);
+    
+    return symbolContainer;
+  }
+
+  _addMoves() {
+    const movesContainer = new Moves();
+    movesContainer.updateMoves(this.currentMoves);
+    movesContainer.position.y = -window.innerHeight / 2 + 60;
+
+    this.addChild(movesContainer);
+
+    return movesContainer;
   }
 
   _addFire() {
+    const fireContainer = new Container();
     const fire1 = new Fire();
     const fire2 = new Fire();
     const offsetY = 110;
@@ -37,29 +396,36 @@ export default class Play extends Scene {
     fire2.position.x = offsetX + 40;
     fire2.position.y = offsetY;
 
-    this.addChild(fire1);
-    this.addChild(fire2);
+    fireContainer.addChild(fire1, fire2);
+    this.addChild(fireContainer);
+
+    return fireContainer;
   }
 
   _addCharacters() {
+    const charContainer = new Container();
     const char1 = new Character();
     const char2 = new Character();
 
     char1.scale.set(0.4);
-    char1.position.x = 300;
+    char1.position.x = 400;
     char1.position.y = -200;
 
     char2.position.x = -500;
     char2.position.y = 50;
 
     gsap.to([char1.position, char2.position], {
-      y: '+=20',
+      y: '+=40',
       repeat: -1,
       yoyo: true,
       duration: 3,
+      ease: 'power1.inOut',
     });
 
-    this.addChild(char1, char2);
+    charContainer.addChild(char1, char2);
+    this.addChild(charContainer);
+
+    return charContainer;
   }
 
   /**
@@ -70,6 +436,6 @@ export default class Play extends Scene {
    * @param  {Number} height Window height
    */
   onResize(width, height) { // eslint-disable-line no-unused-vars
-
+    this.movesContainer.position.y = -height / 2 + 60;
   }
 }

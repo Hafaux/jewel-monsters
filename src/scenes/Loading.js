@@ -1,7 +1,6 @@
 import Assets from '../core/AssetManager';
 import Scene from './Scene';
 import config from '../config';
-import { Text, Loader } from 'pixi.js';
 import LoadingBar from '../components/LoadingBar';
 import Fire from '../components/Fire';
 import Character from '../components/Character';

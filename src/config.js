@@ -27,4 +27,8 @@ export default {
   assets: {
     root: '/',
   },
+  events: {
+    loss: 'LOSS',
+    win: 'WIN',
+  }
 };
