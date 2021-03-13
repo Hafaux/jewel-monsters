@@ -1,5 +1,5 @@
-import { Container, Graphics, Sprite } from 'pixi.js';
-import gsap from 'gsap';
+import { Container, Sprite } from 'pixi.js';
+import { mapRange } from 'gsap/gsap-core';
 
 export default class LoadingBar extends Container {
   constructor() {
@@ -40,7 +40,7 @@ export default class LoadingBar extends Container {
   }
 
   update(val) {
-    const radians = this.map(val, 0, 100, 0, Math.PI * 2);
+    const radians = mapRange(0, 100, 0, Math.PI * 2, val);
     this.loadingBarGlow2.rotation = radians;
     if (val <= 50) {
       this.loadingTest1.rotation = radians;
@@ -48,9 +48,5 @@ export default class LoadingBar extends Container {
       this.loadingTest1.rotation = Math.PI;
       this.loadingTest2.rotation = radians;
     }
-  }
-
-  map(value, low1, high1, low2, high2) {
-    return low2 + (value - low1) * (high2 - low2) / (high1 - low1);
   }
 }

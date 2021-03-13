@@ -1,10 +1,13 @@
-import { Container, Text } from 'pixi.js';
+import { Container, filters } from 'pixi.js';
 import Scene from './Scene';
 import gsap from 'gsap';
 import Fire from '../components/Fire';
 import Character from '../components/Character';
 import Moves from '../components/Moves';
 import Symbol from '../components/Symbol';
+import ProgressBar from '../components/ProgressBar';
+import XpContainer from '../components/XpContainer';
+import Tooltip from '../components/Tooltip';
 
 export default class Play extends Scene {
   async onCreated() {
@@ -16,6 +19,7 @@ export default class Play extends Scene {
       symbolSize: 100,
       fieldSize: 6,
       maxMoves: 20,
+      maxXp: 2000,
     };
     this.currentMoves = this.config.maxMoves;
     this.currentXp = 0;
@@ -23,7 +27,11 @@ export default class Play extends Scene {
     this.fireContainer = this._addFire();
     this.charContaienr = this._addCharacters();
     this.movesContainer = this._addMoves();
-    this.symbolContainer = this._addPlayingField();
+    this.progressBar = this._addProgressBar();
+    this.xpContainer = null;
+    this.symbolContainer = null;
+    this._addSymbolContainer();
+    this._updateCurrentXpText(this.currentXp);
 
     window.addEventListener('pointerup', () => {
       if (this.draggedSymbol === null) return;
@@ -31,6 +39,33 @@ export default class Play extends Scene {
       this.draggedSymbol.sprite.alpha = 1;
       this.draggedSymbol.scale.set(1);
     });
+  }
+
+  _updateCurrentXpText(xp) {
+    if (this.xpContainer !== null) {
+      this.xpContainer.updateXp(xp);
+    } else {
+      this.xpContainer = new XpContainer(xp);
+  
+      this.xpContainer.position.y = window.innerHeight / 2 - 120;
+      this.xpContainer.scale.set(0.3);
+  
+      this.addChild(this.xpContainer);
+    }
+  }
+
+  _addProgressBar() {
+    const progressBar = new ProgressBar();
+    const tooltip = new Tooltip(this.config.maxXp);
+
+    progressBar.position.y = window.innerHeight / 2 - 70;
+    tooltip.position.y = window.innerHeight / 2 - 90;
+    tooltip.position.x = 320;
+
+    this.addChild(progressBar);
+    this.addChild(tooltip);
+
+    return progressBar;
   }
 
   _checkField(generating = false) {
@@ -59,27 +94,26 @@ export default class Play extends Scene {
     });
   }
 
-  async _xpOnMatch(xp, x, y) {
-    const text = new Text(`${xp} xp`, {
-      fill: 'yellow',
-      fontWeight: 'bold',
-      fontSize: 30,
-      strokeThickness: 3
-    });
-    text.anchor.set(0.5);
-    text.position.x = -(this.config.symbolSize * this.config.fieldSize / 2) + 50 + x;
-    text.position.y = -250 + y;
+  async _xpTextOnMatch(xp, x, y) {
+    const colorMatrix = new filters.ColorMatrixFilter();
+    const text = new XpContainer(xp);
+
+    colorMatrix.hue(230);
+    text.filters = [colorMatrix];
+    text.scale.set(0.3);
+    text.position.x = x;
+    text.position.y = y; 
     
-    this.addChild(text);
+    this.symbolContainer.addChild(text);
 
     gsap.fromTo(text, { alpha: 0 }, { alpha: 1 });
-    await gsap.fromTo(text.position, { y: -250 + y + 20 }, { y: -250 + y });
+    await gsap.fromTo(text.position, { y: y + 20 }, { y });
     gsap.to(text, { alpha: 0 });
     gsap.to(text.position, {
       y: '-=20',
-      // duration: 1,
+      ease: 'power1.inOut',
       onComplete: () => {
-        this.removeChild(text);
+        this.symbolContainer.removeChild(text);
       }
     });
   }
@@ -90,13 +124,17 @@ export default class Play extends Scene {
     if (this._areSymbolsSame(symbolArray)) {
       match = true;
       if (generating) return match;
+      
+      const length = symbolArray.length;
+      const xpPos = {
+        x: (symbolArray[0].position.x + symbolArray[length - 1].position.x) / 2,
+        y: (symbolArray[0].position.y + symbolArray[length - 1].position.y) / 2,
+      };
+      const xp = 300 + ((length - 3) * 150);
 
-      const xpPos = symbolArray[Math.floor(symbolArray.length / 2)].position;
-      const xp = 300 + ((symbolArray.length - 3) * 150);
+      this._xpTextOnMatch(xp, xpPos.x, xpPos.y);
 
-      this._xpOnMatch(xp, xpPos.x, xpPos.y);
-
-      this._increaseXp();
+      this._increaseXp(xp);
       symbolArray.forEach((symbol) => {
         symbol.clear();
       });
@@ -173,6 +211,8 @@ export default class Play extends Scene {
 
   _increaseXp(bonusXp) {
     this.currentXp += bonusXp;
+    this._updateCurrentXpText(this.currentXp);
+    this.progressBar.updateProgress(this.currentXp, this.config.maxXp);
   }
 
   _decrementMoves() {
@@ -228,14 +268,6 @@ export default class Play extends Scene {
       for (let j = i; j >= 0; j -= size) {
         if (this.symbols[j].isCleared) {
           clearedSymbols++;
-
-          let symbolsOnTop = 0;
-          for (let k = j; k >= 0; k -= size) {
-            if (!this.symbols[k].isCleared) symbolsOnTop++;
-          }
-          
-          this.symbols[j].position.y -= symbolsOnTop * this.config.symbolSize;
-        
           continue;
         }
 
@@ -361,22 +393,17 @@ export default class Play extends Scene {
     return symbolContainer;
   }
 
-  _addPlayingField() {
-    let symbolContainer = null;
+  _addSymbolContainer() {
     do {
-      symbolContainer = this._generateNewField();
+      this.symbolContainer = this._generateNewField();
     } while (this._checkField(true));
 
-    symbolContainer.position.y = -250;
-    symbolContainer.position.x = -(this.config.symbolSize * this.config.fieldSize / 2) + 50;
-    this.addChild(symbolContainer);
-    
-    return symbolContainer;
+    this.addChild(this.symbolContainer);
+    this._resizeField();
   }
 
   _addMoves() {
-    const movesContainer = new Moves();
-    movesContainer.updateMoves(this.currentMoves);
+    const movesContainer = new Moves(20);
     movesContainer.position.y = -window.innerHeight / 2 + 60;
 
     this.addChild(movesContainer);
@@ -428,6 +455,15 @@ export default class Play extends Scene {
     return charContainer;
   }
 
+  _resizeField() {
+    const defaultFieldWidth = (this.config.symbolSize * this.config.fieldSize);
+    const scaleRatio = (window.innerHeight * 60 / 100) / defaultFieldWidth;
+    this.symbolContainer.scale.set(scaleRatio);
+    const fieldWidth = this.symbolContainer.width;
+    this.symbolContainer.position.y = -fieldWidth / 2 + (fieldWidth / (this.config.fieldSize * 2));
+    this.symbolContainer.position.x = -fieldWidth / 2 + (fieldWidth / (this.config.fieldSize * 2));
+  }
+
   /**
    * Hook called by the application when the browser window is resized.
    * Use this to re-arrange the game elements according to the window size
@@ -437,5 +473,8 @@ export default class Play extends Scene {
    */
   onResize(width, height) { // eslint-disable-line no-unused-vars
     this.movesContainer.position.y = -height / 2 + 60;
+    this.xpContainer.position.y = height / 2 - 120;
+    this.progressBar.position.y = height / 2 - 70;
+    this._resizeField();
   }
 }

@@ -1,4 +1,4 @@
-import { Container, Sprite, Text } from 'pixi.js';
+import { Container, Sprite } from 'pixi.js';
 import gsap from 'gsap';
 
 export default class Symbol extends Container {
@@ -17,11 +17,6 @@ export default class Symbol extends Container {
     this.pivot.set(50, 50);
 
     this.addChild(this.sprite);
-    this.indexText = new Text(this.id, {
-      fill: 'white',
-      fontSize: 25,
-    });
-    // this.addChild(this.indexText);
   }
 
   clear() {
@@ -43,6 +38,5 @@ export default class Symbol extends Container {
 
   updateIndex(index) {
     this.id = index;
-    this.indexText.text = index;
   }
 }

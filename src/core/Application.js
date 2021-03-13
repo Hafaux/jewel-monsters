@@ -78,8 +78,11 @@ export default class GameApplication extends Application {
      * @param  {Number} height        The updated viewport width
      */
   onResize(width = this.config.view.width, height = this.config.view.height) {
-    this.background.x = width / 2;
-    this.background.y = height / 2;
+    if (this.background) {
+      this.background.x = width / 2;
+      this.background.y = height / 2;
+    }
+    
     this.game.onResize(width, height);
 
     if (this.config.view.centerOnResize) {
