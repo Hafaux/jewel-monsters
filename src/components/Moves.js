@@ -1,6 +1,13 @@
 import { Container, Sprite, filters } from 'pixi.js';
 import NumberContainer from './NumberContainer';
 
+/**
+ * Class representing the container showing the current moves.
+ * @prop {Number} numMoves Amount of moves to show
+ * @prop {PIXI.Sprite} background Moves container background
+ * @prop {PIXI.Sprite} movesText The text sprite saying "moves"
+ * @prop {NumberContainer} numberContainer the moves number container
+ */
 export default class Moves extends Container {
   constructor(numMoves) {
     super();
@@ -14,6 +21,10 @@ export default class Moves extends Container {
     this._init();
   }
 
+  /**
+   * Prepares all the sprites, adds a filter, appends everything
+   * @private
+   */
   _init() {
     this.background.anchor.set(0.5);
     this.movesText.anchor.set(0.5, 1);
@@ -27,9 +38,14 @@ export default class Moves extends Container {
     this.numberContainer.filters = [colorMatrix];
     this.movesText.filters = [colorMatrix];
 
+    this.updateMoves(this.numMoves);
     this.addChild(this.background, this.movesText, this.numberContainer);
   }
 
+  /**
+   * Update the moves number
+   * @param {Number} moves number of moves
+   */
   updateMoves(moves) {
     if (moves < 10) this.numberContainer.x = 0;
     this.numberContainer.updateNumber(moves);

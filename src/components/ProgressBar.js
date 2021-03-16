@@ -1,6 +1,13 @@
 import { gsap, mapRange } from 'gsap/gsap-core';
 import { Container, Sprite } from 'pixi.js';
 
+/**
+ * Class representing the xp progress bar during the game.
+ * @prop {PIXI.Sprite} scoreBase sprite
+ * @prop {PIXI.Sprite} loadingLeft sprite
+ * @prop {PIXI.Sprite} loadingMiddle sprite
+ * @prop {PIXI.Sprite} loadingRight sprite
+ */
 export default class ProgressBar extends Container {
   constructor() {
     super();
@@ -12,10 +19,14 @@ export default class ProgressBar extends Container {
 
     this.scoreBase.anchor.set(0.5);
     this.addChild(this.scoreBase);
-    this._addLoadingBar();
+    this._addProgressBar();
   }
 
-  _addLoadingBar() {
+  /**
+   * Adds all the elements of the progress bar.
+   * @private
+   */
+  _addProgressBar() {
     this.loadingBarContainer = new Container();
     this.loadingBarContainer.visible = false;
     this.loadingLeft.anchor.set(0.5);
@@ -34,6 +45,11 @@ export default class ProgressBar extends Container {
     );
   }
 
+  /**
+   * Updates progress.
+   * @param {Number} currentXp current xp
+   * @param {Number} maxXp max xp
+   */
   updateProgress(currentXp, maxXp) {
     if (!this.loadingBarContainer.visible && currentXp > 0) {
       this.loadingBarContainer.visible = true;

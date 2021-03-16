@@ -1,6 +1,6 @@
 import Assets from '../core/AssetManager';
 import { Container } from 'pixi.js';
-
+import Fire from '../components/Fire';
 /**
  * Scene abstract class, defines common scene methods
  * and implements assets preload method.
@@ -9,7 +9,7 @@ import { Container } from 'pixi.js';
  */
 export default class Scene extends Container {
   /* eslint-disable */
-  constructor()
+  constructor(fire = true)
   {
     super();
 
@@ -17,6 +17,22 @@ export default class Scene extends Container {
      * The main application background
      */
     this.background = null;
+    if (fire) this._addFire();
+  }
+  
+  _addFire() {
+    const fire1 = new Fire();
+    const fire2 = new Fire();
+    const offsetY = 110;
+    const offsetX = 680;
+
+    fire1.position.x = -offsetX;
+    fire1.position.y = offsetY;
+    fire2.position.x = offsetX + 40;
+    fire2.position.y = offsetY;
+
+    this.addChild(fire1);
+    this.addChild(fire2);
   }
 
   /**

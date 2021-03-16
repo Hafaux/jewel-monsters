@@ -1,5 +1,10 @@
 import { Container, Sprite } from 'pixi.js';
 
+/**
+ * Class representing the number sprites.
+ * @prop {Number} integer integer number
+ * @prop {(PIXI.Container|null)} digitContainer element containing the number sprites
+ */
 export default class NumberContainer extends Container {
   constructor(integer) {
     super();
@@ -10,6 +15,10 @@ export default class NumberContainer extends Container {
     this.updateNumber(this.integer);
   }
 
+  /**
+   * Updates the number container
+   * @param {Number} num integer number
+   */
   updateNumber(num) {
     if (this.digitContainer) this.removeChild(this.digitContainer);
     this.digitContainer = new Container();
@@ -18,6 +27,11 @@ export default class NumberContainer extends Container {
     this.addChild(this.digitContainer);
   }
 
+  /**
+   * Adds all the digits of the number as sprites to the container.
+   * @param {Number} num integer number
+   * @private
+   */
   _addDigits(num) {
     let digitOffset = 0;
 
@@ -36,6 +50,12 @@ export default class NumberContainer extends Container {
     }
   }
 
+  /**
+   * Returns a digit sprite.
+   * @param {Number} digit single digit
+   * @param {Number} digitOffset Digit position
+   * @returns {PIXI.Sprite}
+   */
   _getDigitSprite(digit, digitOffset) {
     const digitSprite = new Sprite.from(digit.toString());
 

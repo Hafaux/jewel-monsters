@@ -28,7 +28,8 @@ export default {
     root: '/',
   },
   events: {
-    loss: 'LOSS',
-    win: 'WIN',
+    LOSE: 'game_lose',
+    WIN: 'game_win',
+    RESTART: 'game_restart',
   }
 };

@@ -3,8 +3,8 @@ import Scene from './Scene';
 import config from '../config';
 
 export default class Splash extends Scene {
-  constructor() {
-    super();
+  constructor(fire) {
+    super(fire);
 
     this.config = config.scenes.Splash;
   }
@@ -24,8 +24,10 @@ export default class Splash extends Scene {
       'loading-bar-glow': Assets.images['loading-bar-glow'],
       'loading-bar-mask-left': Assets.images['loading-bar-mask-left'],
       'loading-bar-mask-right': Assets.images['loading-bar-mask-right'],
-      'loading-bar-test': Assets.images['loading-bar-test'],
+      'loading-bar-blue': Assets.images['loading-bar-blue'],
       fire: Assets.images.fire,
+      'displacement-map': Assets.images['displacement-map'], 
+      particle: Assets.images.particle,
     };
     const sounds = {
       

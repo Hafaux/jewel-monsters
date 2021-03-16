@@ -1,6 +1,9 @@
 import Loading from './scenes/Loading';
 import Splash from './scenes/Splash';
 import Play from './scenes/Play';
+import Win from './scenes/Win';
+import Lose from './scenes/Lose';
+import config from './config';
 import { Container } from 'pixi.js';
 
 /**
@@ -12,7 +15,9 @@ export default class Game extends Container {
 
   static get events() {
     return {
-      SWITCH_SCENE: 'switch_scene'
+      SWITCH_SCENE: 'switch_scene',
+      WIN: 'win',
+      LOSE: 'lose',
     };
   }
 
@@ -27,11 +32,7 @@ export default class Game extends Container {
   }
 
   async start() {
-    await this.switchScene(Splash, { scene: 'splash' });
-    await this.currentScene.finish;
-    await this.switchScene(Loading, { scene: 'loading' });
-    await this.currentScene.finish;
-
+    await this._switchToLoading();
     this.switchScene(Play, { scene: 'play' });
   }
 
@@ -41,13 +42,44 @@ export default class Game extends Container {
    */
   switchScene(constructor, scene) {
     this.removeChild(this.currentScene);
-    this.currentScene = new constructor();
+
+    if (constructor === Splash) this.currentScene = new Splash(false);
+    else this.currentScene = new constructor();
+
     this.currentScene.background = this._background;
     this.addChild(this.currentScene);
 
-    this.emit(Game.events.SWITCH_SCENE, { scene });
+    this._addSceneListeners(constructor);
+
+    this.emit(Game.events.SWITCH_SCENE, scene);
 
     return this.currentScene.onCreated();
+  }
+
+  _addSceneListeners(constructor) {
+    if (constructor === Play) {
+      const playScene = this.currentScene;
+
+      playScene.on(config.events.WIN, () => {
+        this.switchScene(Win, { scene: 'win' });
+      });
+      playScene.on(config.events.LOSE, () => {
+        this.switchScene(Lose, { scene: 'lose' });
+      });
+    } else if (constructor === Win || constructor === Lose) {
+      const gameEndScene = this.currentScene;
+
+      gameEndScene.on(config.events.RESTART, () => {
+        this.switchScene(Play, { scene: 'play' });
+      });
+    }
+  }
+
+  async _switchToLoading() {
+    await this.switchScene(Splash, { scene: 'splash' });
+    await this.currentScene.finish;
+    await this.switchScene(Loading, { scene: 'loading' });
+    await this.currentScene.finish;
   }
 
   /**

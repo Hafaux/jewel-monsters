@@ -1,6 +1,12 @@
 import { Container, Sprite, filters } from 'pixi.js';
 import XpContainer from './XpContainer';
 
+/**
+ * Class representing the tooltip next to the progress bar.
+ * @prop {Number} xp the xp to display
+ * @prop {PIXI.Sprite} tooltip the tooltip sprite
+ * @prop {XpContainer} xpContainer the xp number container
+ */
 export default class Tooltip extends Container {
   constructor(xp = 5000) {
     super();
