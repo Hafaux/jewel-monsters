@@ -9,6 +9,7 @@ import XpContainer from '../components/XpContainer';
 import Tooltip from '../components/Tooltip';
 import config from '../config';
 import Assets from '../core/AssetManager';
+import { fitMaxScale } from '../core/utils';
 
 /**
  * Class representing the main scene of the game.
@@ -37,8 +38,8 @@ export default class Play extends Scene {
       typesOfSymbols: 6,
       symbolSize: 100,
       fieldSize: 6,
-      maxMoves: 10,
-      maxXp: 5000,
+      maxMoves: 1,
+      maxXp: 450,
       adjacentOnly: false,
     };
     this._currentMoves = this._config.maxMoves;
@@ -51,6 +52,7 @@ export default class Play extends Scene {
     this._addProgressBar();
     this._addSymbolContainer();
     this._onSceneEnter();
+    this.addFire();
   }
 
   /**
@@ -769,5 +771,6 @@ export default class Play extends Scene {
     this._movesContainer.position.y = -height / 2 + 60;
     this._resizeProgressBar();
     this._resizeField();
+    fitMaxScale(this.background, { width, height });
   }
 }

@@ -14,10 +14,36 @@ export default class Loading extends Scene {
     super();
 
     this.config = config.scenes.Loading;
+  }
+
+  async _init() {
+    await this._loadSceneAssets();
     
+    this.addFire();
     this._addCharacter();
     this.loadingBar = new LoadingBar();
     this.addChild(this.loadingBar);
+  }
+
+  async _loadSceneAssets() {
+    const images = {
+      'char-body': Assets.images['char-body'],
+      'char-eye': Assets.images['char-eye'],
+      'char-lid-bottom': Assets.images['char-lid-bottom'],
+      'char-lid-top': Assets.images['char-lid-top'],
+      'fire-glow': Assets.images['fire-glow'],
+      'loading-bar': Assets.images['loading-bar'],
+      'loading-bar-glow': Assets.images['loading-bar-glow'],
+      'loading-bar-mask-left': Assets.images['loading-bar-mask-left'],
+      'loading-bar-mask-right': Assets.images['loading-bar-mask-right'],
+      'loading-bar-blue': Assets.images['loading-bar-blue'],
+      fire: Assets.images.fire,
+      'displacement-map': Assets.images['displacement-map'], 
+      particle: Assets.images.particle,
+    };
+
+    await Assets.load({ images });
+    await Assets.prepareImages(images);
   }
 
   /**
@@ -26,6 +52,7 @@ export default class Loading extends Scene {
    */
   _addCharacter() {
     const char = new Character();
+
     char.hover('+=10', 2);
     char.scale.set(0.8);
     this.addChild(char);
@@ -35,7 +62,7 @@ export default class Loading extends Scene {
     return new Promise((res)=>setTimeout(res, this.config.hideDelay));
   }
 
-  preload() {
+  async preload() {
     const images = {
       'label-failed': Assets.images['label-failed'],
       'label-passed': Assets.images['label-passed'],
@@ -71,6 +98,8 @@ export default class Loading extends Scene {
       win: Assets.sounds.win,
       fail: Assets.sounds.fail,
     };
+
+    await this._init();
 
     return super.preload({ images, sounds });
   }

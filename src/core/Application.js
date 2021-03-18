@@ -2,7 +2,7 @@ import { Sprite, Application } from 'pixi.js';
 import config from '../config';
 import Game from '../Game';
 import { Viewport } from 'pixi-viewport';
-import { center } from './utils';
+import { center, fitMaxScale } from './utils';
 import Assets from './AssetManager';
 
 /**
@@ -81,6 +81,7 @@ export default class GameApplication extends Application {
     if (this.background) {
       this.background.x = width / 2;
       this.background.y = height / 2;
+      fitMaxScale(this.background, { width, height });
     }
     
     this.game.onResize(width, height);

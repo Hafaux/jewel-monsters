@@ -20,6 +20,22 @@ export function fit(element, { width, height }, ignoreRatio = false, overscale =
 }
 
 /**
+ * @desc fits display object, by altering its scale, into passed width and height
+ * @param {PIXI.DisplayObject} element
+ * @param {Object} size
+ * @param {Number} size.width
+ * @param {Number} size.height
+ */
+export function fitMaxScale(element, { width, height }) {
+  const wScale = width / element.width;
+  const hScale = height / element.height;
+  const scale = Math.max(wScale, hScale);
+
+  element.scale.x *= scale;
+  element.scale.y *= scale;
+}
+
+/**
  * @desc centers a display /vertically, horizontally or both/ object into its parent
  * @param {PIXI.DisplayObject} element
  * @param {Number} width

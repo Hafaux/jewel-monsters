@@ -1,5 +1,4 @@
 import Loading from './scenes/Loading';
-import Splash from './scenes/Splash';
 import Play from './scenes/Play';
 import Win from './scenes/Win';
 import Lose from './scenes/Lose';
@@ -16,8 +15,6 @@ export default class Game extends Container {
   static get events() {
     return {
       SWITCH_SCENE: 'switch_scene',
-      WIN: 'win',
-      LOSE: 'lose',
     };
   }
 
@@ -32,7 +29,8 @@ export default class Game extends Container {
   }
 
   async start() {
-    await this._switchToLoading();
+    await this.switchScene(Loading, { scene: 'loading' });
+    await this.currentScene.finish;
     this.switchScene(Play, { scene: 'play' });
   }
 
@@ -43,8 +41,7 @@ export default class Game extends Container {
   switchScene(constructor, scene) {
     this.removeChild(this.currentScene);
 
-    if (constructor === Splash) this.currentScene = new Splash(false);
-    else this.currentScene = new constructor();
+    this.currentScene = new constructor();
 
     this.currentScene.background = this._background;
     this.addChild(this.currentScene);
@@ -73,13 +70,6 @@ export default class Game extends Container {
         this.switchScene(Play, { scene: 'play' });
       });
     }
-  }
-
-  async _switchToLoading() {
-    await this.switchScene(Splash, { scene: 'splash' });
-    await this.currentScene.finish;
-    await this.switchScene(Loading, { scene: 'loading' });
-    await this.currentScene.finish;
   }
 
   /**

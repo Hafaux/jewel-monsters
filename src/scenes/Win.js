@@ -18,11 +18,12 @@ export default class Win extends Scene {
     this._charContainer = this._addCharacters();
     this._addLabel(); 
     this._addPrompt();
-    
+    this.addFire();
+
     this._keyDownHandler = this._onKeyDown.bind(this);
     window.addEventListener('keydown', this._keyDownHandler);
     Assets.sounds.win.play();
-    
+
     this._resizeScene();
   }
 

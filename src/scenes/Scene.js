@@ -9,7 +9,7 @@ import Fire from '../components/Fire';
  */
 export default class Scene extends Container {
   /* eslint-disable */
-  constructor(fire = true)
+  constructor()
   {
     super();
 
@@ -17,10 +17,12 @@ export default class Scene extends Container {
      * The main application background
      */
     this.background = null;
-    if (fire) this._addFire();
   }
   
-  _addFire() {
+  /**
+   * Adds the fire sprites to the scene.
+   */
+  addFire() {
     const fire1 = new Fire();
     const fire2 = new Fire();
     const offsetY = 110;
@@ -62,7 +64,7 @@ export default class Scene extends Container {
   /**
    * Called when an individual asset is loaded and load progress is made
    * 
-   * @param  {Number} progress Current progress value as a number
+   * @param {Number} progress Current progress value as a number
    */
   onLoadProgress(progress) {
 

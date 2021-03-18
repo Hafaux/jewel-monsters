@@ -14,7 +14,8 @@ export default class Lose extends Scene {
 
     this._addLabel();
     this._addPrompt();
-    
+    this.addFire();
+
     this._keyDownHandler = this._onKeyDown.bind(this);
     window.addEventListener('keydown', this._keyDownHandler);
     Assets.sounds.fail.play();
