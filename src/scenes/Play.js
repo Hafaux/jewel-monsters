@@ -18,6 +18,7 @@ import { fitMaxScale } from '../core/utils';
  * @prop {Boolean} _transition True when the symbols are in a transitional state (moving, falling, etc.)
  * @prop {Symbols[]} _symbols Array containing all of the symbols in the field
  * @prop {Number} _combo Number of consecutive matches
+ * @prop {Object} _symbolSpriteInfo Info about the symbol sprites.
  * @prop {Object} _config Game configuration object
  * @prop {Number} _currentMoves The amount of moves available to the players
  * @prop {Number} _currentXp Current accumulated xp
@@ -29,19 +30,18 @@ import { fitMaxScale } from '../core/utils';
  */
 export default class Play extends Scene {
   async onCreated() {
+    this.name = 'play scene';
+
     this._draggedSymbol = null;
     this._gameOver = false;
     this._transition = false;
     this._symbols = [];
     this._combo = 0;
-    this._config = {
+    this._symbolSpritesInfo = {
       typesOfSymbols: 6,
       symbolSize: 100,
-      fieldSize: 6,
-      maxMoves: 1,
-      maxXp: 450,
-      adjacentOnly: false,
     };
+    this._config = config.scenes.Play;
     this._currentMoves = this._config.maxMoves;
     this._currentXp = 0;
 
@@ -394,9 +394,9 @@ export default class Play extends Scene {
         const oldSymbol = this._symbols[index];
         const newSymbol = this._getNewSymbol(index);
   
-        newSymbol.position.x = col * this._config.symbolSize;
+        newSymbol.position.x = col * this._symbolSpritesInfo.symbolSize;
   
-        const posY = i * this._config.symbolSize;
+        const posY = i * this._symbolSpritesInfo.symbolSize;
   
         this._transition = true;
   
@@ -441,7 +441,7 @@ export default class Play extends Scene {
         this._transition = true;
 
         gsap.to(this._symbols[j].position, {
-          y: `+=${clearedSymbols * this._config.symbolSize}`,
+          y: `+=${clearedSymbols * this._symbolSpritesInfo.symbolSize}`,
           ease: 'bounce',
           duration: fallingDuration,
         });
@@ -570,15 +570,15 @@ export default class Play extends Scene {
     const ease = 'power1.inOut';
 
     gsap.to(symbol1.position, {
-      x: this._config.symbolSize * (symbol1.id % this._config.fieldSize),
-      y: this._config.symbolSize * (Math.floor(symbol1.id / this._config.fieldSize)),
+      x: this._symbolSpritesInfo.symbolSize * (symbol1.id % this._config.fieldSize),
+      y: this._symbolSpritesInfo.symbolSize * (Math.floor(symbol1.id / this._config.fieldSize)),
       duration: 0.3,
       ease,
     });
 
     await gsap.to(symbol2.position, {
-      x: this._config.symbolSize * (symbol2.id % this._config.fieldSize),
-      y: this._config.symbolSize * (Math.floor(symbol2.id / this._config.fieldSize)),
+      x: this._symbolSpritesInfo.symbolSize * (symbol2.id % this._config.fieldSize),
+      y: this._symbolSpritesInfo.symbolSize * (Math.floor(symbol2.id / this._config.fieldSize)),
       duration: 0.3,
       ease,
     });
@@ -610,7 +610,7 @@ export default class Play extends Scene {
    * @returns {Symbol} Symbol
    */
   _getNewSymbol(index) {
-    const symbolType = Math.floor(Math.random() * this._config.typesOfSymbols + 1);
+    const symbolType = Math.floor(Math.random() * this._symbolSpritesInfo.typesOfSymbols + 1);
     const symbol = new Symbol(symbolType, index);
 
     symbol.on('pointerdown', () => {
@@ -648,15 +648,19 @@ export default class Play extends Scene {
   _generateNewField() {
     if (this._symbolContainer) this.removeChild(this._symbolContainer);
     
+    this._symbolContainer = new Container();
+    this._symbolContainer.name = 'symbolContainer';
+    this._symbolContainer.fieldSize = this._config.fieldSize;
+
     do {
-      this._symbolContainer = new Container();
+      this._symbolContainer.removeChildren();
       this._symbols = [];
   
       for (let i = 0; i < this._config.fieldSize * this._config.fieldSize; i++) {
         const symbol = this._getNewSymbol(i);
   
-        symbol.position.x = this._config.symbolSize * (i % this._config.fieldSize);
-        symbol.position.y = this._config.symbolSize * (Math.floor(i / this._config.fieldSize));
+        symbol.position.x = this._symbolSpritesInfo.symbolSize * (i % this._config.fieldSize);
+        symbol.position.y = this._symbolSpritesInfo.symbolSize * (Math.floor(i / this._config.fieldSize));
         this._symbolContainer.addChild(symbol);
   
         this._symbols.push(symbol);
@@ -735,7 +739,7 @@ export default class Play extends Scene {
    * @private
    */
   _resizeField() {
-    const defaultFieldWidth = (this._config.symbolSize * this._config.fieldSize);
+    const defaultFieldWidth = (this._symbolSpritesInfo.symbolSize * this._config.fieldSize);
     const scaleRatio = (window.innerHeight * 60 / 100) / defaultFieldWidth;
     const scaleRatioWidth = (window.innerWidth * 95 / 100) / defaultFieldWidth;
     const smallerRatio = scaleRatio < scaleRatioWidth ? scaleRatio : scaleRatioWidth;

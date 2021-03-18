@@ -17,12 +17,15 @@ export default {
     wheel: false,
   },
   scenes: {
-    Splash: {
-      hideDelay: 0,
-    },
     Loading: {
       hideDelay: 0,
     },
+    Play: {
+      fieldSize: 6,
+      maxXp: 5000,
+      maxMoves: 20,
+      adjacentOnly: false,
+    }
   },
   assets: {
     root: '/',

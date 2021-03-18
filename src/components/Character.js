@@ -70,7 +70,7 @@ export default class Character extends Container {
     const eyelidsScale = [this._charLidTop, this._charLidBottom].map((c) => c.scale);
     this.tl
       .to(eyelidsScale, {
-        y: 0.2,
+        y: 0.3,
         x: 0.6,
         duration: 0.1,
         ease: 'power1.in',
