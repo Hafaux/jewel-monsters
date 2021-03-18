@@ -5,7 +5,7 @@ import gsap from 'gsap';
  * Class representing the match-3 symbol.
  * @prop {Boolean} isCleared whether the symbol has been cleared
  * @prop {Number} type symbol type (from 1 to 6)
- * @prop {PIXI.Sprite} sprite the symbol sprite
+ * @prop {PIXI.Sprite} _sprite the symbol sprite
  * @prop {Number} id the symbol index in the symbols array
  */
 export default class Symbol extends Container {
@@ -14,7 +14,7 @@ export default class Symbol extends Container {
 
     this.isCleared = false;
     this.type = type;
-    this.sprite = new Sprite.from(`symbol-${this.type}`);
+    this._sprite = new Sprite.from(`symbol-${this.type}`);
     this.id = id;
 
     this.buttonMode = true;
@@ -23,7 +23,7 @@ export default class Symbol extends Container {
 
     this.pivot.set(50, 50);
 
-    this.addChild(this.sprite);
+    this.addChild(this._sprite);
   }
 
   /**

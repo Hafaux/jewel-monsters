@@ -12,42 +12,42 @@ import Assets from '../core/AssetManager';
 
 /**
  * Class representing the main scene of the game.
- * @prop {Symbol} draggedSymbol The symbol the player is currently dragging
- * @prop {Boolean} gameOver Game state
- * @prop {Boolean} transition True when the symbols are in a transitional state (moving, falling, etc.)
- * @prop {Symbols[]} symbols Array containing all of the symbols in the field
- * @prop {Number} combo Number of consecutive matches
- * @prop {Object} config Game configuration object
- * @prop {Number} currentMoves The amount of moves available to the players
- * @prop {Number} currentXp Current accumulated xp
- * @prop {PIXI.Container} fireContainer Contains the two fire sprites
- * @prop {PIXI.Container} charContainer Contains the two characters
- * @prop {Moves} movesContainer The Moves label on the top
- * @prop {(PIXI.Container|null)} xpContainer The XP text above the progress bar
- * @prop {(PIXI.Container|null)} symbolContainer The element containing all of the symbols on the screen.
+ * @prop {Symbol} _draggedSymbol The symbol the player is currently dragging
+ * @prop {Boolean} _gameOver Game state
+ * @prop {Boolean} _transition True when the symbols are in a transitional state (moving, falling, etc.)
+ * @prop {Symbols[]} _symbols Array containing all of the symbols in the field
+ * @prop {Number} _combo Number of consecutive matches
+ * @prop {Object} _config Game configuration object
+ * @prop {Number} _currentMoves The amount of moves available to the players
+ * @prop {Number} _currentXp Current accumulated xp
+ * @prop {PIXI.Container} _fireContainer Contains the two fire sprites
+ * @prop {PIXI.Container} _charContainer Contains the two characters
+ * @prop {Moves} _movesContainer The Moves label on the top
+ * @prop {(PIXI.Container|null)} _xpContainer The XP text above the progress bar
+ * @prop {(PIXI.Container|null)} _symbolContainer The element containing all of the symbols on the screen.
  */
 export default class Play extends Scene {
   async onCreated() {
-    this.draggedSymbol = null;
-    this.gameOver = false;
-    this.transition = false;
-    this.symbols = [];
-    this.combo = 0;
-    this.config = {
+    this._draggedSymbol = null;
+    this._gameOver = false;
+    this._transition = false;
+    this._symbols = [];
+    this._combo = 0;
+    this._config = {
       typesOfSymbols: 6,
       symbolSize: 100,
       fieldSize: 6,
-      maxMoves: 20,
+      maxMoves: 10,
       maxXp: 5000,
       adjacentOnly: false,
     };
-    this.currentMoves = this.config.maxMoves;
-    this.currentXp = 0;
+    this._currentMoves = this._config.maxMoves;
+    this._currentXp = 0;
 
-    this.charContainer = this._addCharacters();
-    this.movesContainer = this._addMoves();
-    this.xpContainer = null;
-    this.symbolContainer = null;
+    this._charContainer = this._addCharacters();
+    this._movesContainer = this._addMoves();
+    this._xpContainer = null;
+    this._symbolContainer = null;
     this._addProgressBar();
     this._addSymbolContainer();
     this._onSceneEnter();
@@ -56,21 +56,21 @@ export default class Play extends Scene {
   /**
    * Transitions the scene elements smoothy when the scene starts.
    * @private
-   * @returns {Promise}
+   * @returns {Promise} Tween
    */
   async _onSceneEnter() {
-    this.transition = true;
+    this._transition = true;
 
     const elements = [
-      this.symbolContainer,
-      this.charContainer,
-      this.movesContainer,
-      this.progressBarContainer
+      this._symbolContainer,
+      this._charContainer,
+      this._movesContainer,
+      this._progressBarContainer
     ];
 
     await gsap.fromTo(elements, { alpha: 0 }, { alpha: 1 });
 
-    this.transition = false;
+    this._transition = false;
   }
 
   /**
@@ -79,8 +79,8 @@ export default class Play extends Scene {
    * @private
    */
   _symbolOnPointerUpOutside() {
-    if (this.draggedSymbol === null) return;
-    gsap.to(this.draggedSymbol.scale, {
+    if (this._draggedSymbol === null) return;
+    gsap.to(this._draggedSymbol.scale, {
       x: 1,
       y: 1,
       duration: 0.05,
@@ -94,15 +94,15 @@ export default class Play extends Scene {
    * @private
    */
   _updateCurrentXpText(xp) {
-    if (this.xpContainer !== null) {
-      this.xpContainer.updateXp(xp);
+    if (this._xpContainer !== null) {
+      this._xpContainer.updateXp(xp);
     } else {
-      this.xpContainer = new XpContainer(xp);
+      this._xpContainer = new XpContainer(xp);
   
-      this.xpContainer.position.y = -50;
-      this.xpContainer.scale.set(0.3);
+      this._xpContainer.position.y = -50;
+      this._xpContainer.scale.set(0.3);
   
-      this.progressBarContainer.addChild(this.xpContainer);
+      this._progressBarContainer.addChild(this._xpContainer);
     }
   }
 
@@ -111,34 +111,65 @@ export default class Play extends Scene {
    * @private
    */
   _addProgressBar() {
-    this.progressBarContainer = new Container();
+    this._progressBarContainer = new Container();
     const progressBar = new ProgressBar();
-    const tooltip = new Tooltip(this.config.maxXp);
+    const tooltip = new Tooltip(this._config.maxXp);
 
-    this.progressBarContainer.position.y = window.innerHeight / 2 - 70;
+    this._progressBarContainer.position.y = window.innerHeight / 2 - 70;
     tooltip.position.y = -20;
     tooltip.position.x = 320;
 
-    this.progressBarContainer.addChild(progressBar);
-    this.progressBarContainer.addChild(tooltip);
-    this._updateCurrentXpText(this.currentXp);
+    this._progressBarContainer.addChild(progressBar);
+    this._progressBarContainer.addChild(tooltip);
+    this._updateCurrentXpText(this._currentXp);
 
-    this.progressBarContainer.progressBar = progressBar;
-    this.addChild(this.progressBarContainer);
+    this._progressBarContainer.progressBar = progressBar;
+    this.addChild(this._progressBarContainer);
 
-    this.progressBarContainer.startingWidth = this.progressBarContainer.width;
+    this._progressBarContainer.startingWidth = this._progressBarContainer.width;
     this._resizeProgressBar();
+  }
+
+  /**
+   * Called when there's a match.
+   * @private
+   */
+  _onMatch() {
+    this._chars.forEach((char) => char.openEyesWide());
+
+    const sound = Assets.sounds.match.play();
+    Assets.sounds.match.rate(1 + 0.2 * this._combo, sound);
+    if (this._combo < 5) this._combo++;
+
+    setTimeout(() => {
+      this._moveSymbolsDown();
+    }, 250);
+  }
+
+  /**
+   * Called when there's no match.
+   * @private
+   */
+  _onNoMatch() {
+    this._transition = false;
+    this._combo = 0;
+
+    if (this._currentXp >= this._config.maxXp) {
+      this._sceneTransition(config.events.WIN);
+    } else if (this._currentMoves === 0 && (this._currentXp < this._config.maxXp)) {
+      this._sceneTransition(config.events.LOSE);
+    }
   }
 
   /**
    * Checks all rows and columns of symbols for matches of 3 or more.
    * @param {Boolean} generating If true, returns on the first match, used for regenerating the field when the game starts.
-   * @returns {Boolean}
+   * @returns {Boolean} True when there's a match 
    * @private
    */
   _checkField(generating = false) {
     let match = false;
-    if (!generating && this.gameOver) return false;
+    if (!generating && this._gameOver) return false;
 
     if (this._checkRows(generating)) match = true;
     if (generating && match) return match;
@@ -146,20 +177,8 @@ export default class Play extends Scene {
     if (this._checkColumns(generating)) match = true;
     if (generating && match) return match;
 
-    if (match) {
-      this.chars.forEach((char) => char.openEyesWide());
-
-      const sound = Assets.sounds.match.play();
-      Assets.sounds.match.rate(1 + 0.2 * this.combo, sound);
-      if (this.combo < 5) this.combo++;
-
-      setTimeout(() => {
-        this._moveSymbolsDown();
-      }, 250);
-    } else {
-      this.transition = false;
-      this.combo = 0;
-    }
+    if (match) this._onMatch();
+    else this._onNoMatch();
 
     return match;
   }
@@ -168,7 +187,7 @@ export default class Play extends Scene {
    * Checks if all of the symbols in the array are of the same type.
    * @param {Symbol[]} symbolArray Array of symbols
    * @private
-   * @returns {Boolean}
+   * @returns {Boolean} True when symbols are of the same type
    */
   _areSymbolsSame(symbolArray) {
     return symbolArray.every((symbol) => {
@@ -177,7 +196,7 @@ export default class Play extends Scene {
   }
 
   /**
-   * Animates the amount of xp from the location of the match.
+   * Animates the amount of xp _from the location of the match.
    * @param {Number} xp Match xp
    * @param {Number} x X coordinate of the xp text
    * @param {Number} y Y coordinate of the xp text
@@ -194,26 +213,23 @@ export default class Play extends Scene {
     text.position.x = x;
     text.position.y = y; 
     
-    this.symbolContainer.addChild(text);
+    this._symbolContainer.addChild(text);
 
-    gsap.fromTo(text, { alpha: 0 }, { alpha: 1 });
-    await gsap.fromTo(text.position, { y: y + 20 }, { y });
-    gsap.to(text, { alpha: 0 });
-    gsap.to(text.position, {
-      y: '-=20',
-      ease: 'power1.inOut',
-      onComplete: () => {
-        this.symbolContainer.removeChild(text);
-      }
-    });
+    new gsap.timeline()
+      .fromTo(text, { alpha: 0 }, { alpha: 1 })
+      .fromTo(text, { y: y + 20 }, { y }, '<')
+      .to(text, { alpha: 0 })
+      .to(text, { y: '-=20', ease: 'power1.inOut', onComplete: () => {
+        this._symbolContainer.removeChild(text);
+      }}, '<');
   }
 
   /**
-   * 
+   * Checks an array of symbols for matches, updates xp and clears matched symbols
    * @param {Symbol[]} symbolArray Array of symbols to check for a match
    * @param {Boolean} prevMatch The previous match, to prevent this func from resetting the match boolean
    * @param {Boolean} generating If true, returns right after if finds a match 
-   * @returns {Boolean}
+   * @returns {Boolean} True if the symbols are matching
    * @private
    */
   _checkMatch(symbolArray, prevMatch, generating = false) {
@@ -245,12 +261,12 @@ export default class Play extends Scene {
   /**
    * Checks the rows for matches
    * @param {Boolean} generating If it's generating the symbols at the game start
-   * @returns {Boolean}
+   * @returns {Boolean} Match
    * @private
    */
   _checkRows(generating = false) {
     let match = false;
-    const size = this.config.fieldSize;
+    const size = this._config.fieldSize;
 
     for (let rowIndex = 0; rowIndex < size; rowIndex++) {
       for (let i = 0; i < (size - 2); i++) {
@@ -259,7 +275,7 @@ export default class Play extends Scene {
         const endIndex = size + offsetIndex;
 
         for (let start = startIndex, end = endIndex; (end - start) >= 3; end--) {
-          const subRow = this.symbols.slice(start, end);
+          const subRow = this._symbols.slice(start, end);
 
           match = this._checkMatch(subRow, match, generating);
           if (generating && match) return match;
@@ -273,18 +289,18 @@ export default class Play extends Scene {
   /**
    * Checks the columns for matches.
    * @param {Boolean} generating If it's generating the symbols at the game start, returns on the first match
-   * @returns {Boolean}
+   * @returns {Boolean} Match
    * @private
    */
   _checkColumns(generating = false) {
     let match = false;
-    const size = this.config.fieldSize;
+    const size = this._config.fieldSize;
 
     for (let colIndex = 0; colIndex < size; colIndex++) {
       const column = [];
 
       for (let i = 0; i < size * size; i += size) {
-        column.push(this.symbols[i + colIndex]);
+        column.push(this._symbols[i + colIndex]);
       }
       
       for (let i = 0; i < (size - 2); i++) { 
@@ -305,7 +321,7 @@ export default class Play extends Scene {
    * @private
    */
   _updateProgressBar() {
-    this.progressBarContainer.progressBar.updateProgress(this.currentXp, this.config.maxXp);
+    this._progressBarContainer.progressBar.updateProgress(this._currentXp, this._config.maxXp);
   }
 
   /**
@@ -314,13 +330,9 @@ export default class Play extends Scene {
    * @private
    */
   _increaseXp(bonusXp) {
-    this.currentXp += bonusXp;
-    this._updateCurrentXpText(this.currentXp);
+    this._currentXp += bonusXp;
+    this._updateCurrentXpText(this._currentXp);
     this._updateProgressBar();
-
-    if (this.currentXp >= this.config.maxXp) {
-      this._sceneTransition(config.events.WIN);
-    }
   }
 
   /**
@@ -329,28 +341,28 @@ export default class Play extends Scene {
    * @private
    */
   _sceneTransition(event) {
-    this.gameOver = true;
-    this.transition = true;
+    this._gameOver = true;
+    this._transition = true;
 
     const elements = [
-      this.symbolContainer,
-      this.charContainer,
-      this.movesContainer,
-      this.progressBarContainer
+      this._symbolContainer,
+      this._charContainer,
+      this._movesContainer,
+      this._progressBarContainer
     ];
 
     this.blinkIntervals.forEach((interval) => clearInterval(interval));
 
     setTimeout(async () => {
-      if (this.chars) {
-        this.chars.forEach((char) => {
+      if (this._chars) {
+        this._chars.forEach((char) => {
           char.unfollowMouse();
         });
       }
 
       await gsap.to(elements, { alpha: 0, duration: 0.3 });
       this.emit(event);
-    }, 1500);
+    }, 500);
   }
 
   /**
@@ -358,21 +370,17 @@ export default class Play extends Scene {
    * @private
    */
   _decrementMoves() {
-    this.movesContainer.updateMoves(--this.currentMoves);
-
-    if (this.currentMoves === 0 && (this.currentXp < this.config.maxXp)) {
-      this._sceneTransition(config.events.LOSE);
-    }
+    this._movesContainer.updateMoves(--this._currentMoves);
   }
 
   /**
    * Generates new symbols for each column and smoothly animates the fall.
    * @param {Number[]} symbolsToGenerate array containing the amount of new symbols each column need
    * @private
-   * @returns {Promise}
+   * @returns {Promise} tween
    */
   async _generateNewSymbols(symbolsToGenerate) {
-    const size = this.config.fieldSize;
+    const size = this._config.fieldSize;
     const fallDuration = 1;
     let tween = null;
 
@@ -381,14 +389,14 @@ export default class Play extends Scene {
 
       for (let i = cleared - 1; i >= 0; i--) {
         const index = col + size * i;
-        const oldSymbol = this.symbols[index];
+        const oldSymbol = this._symbols[index];
         const newSymbol = this._getNewSymbol(index);
   
-        newSymbol.position.x = col * this.config.symbolSize;
+        newSymbol.position.x = col * this._config.symbolSize;
   
-        const posY = i * this.config.symbolSize;
+        const posY = i * this._config.symbolSize;
   
-        this.transition = true;
+        this._transition = true;
   
         tween = gsap.fromTo(newSymbol.position, {
           y: posY - window.innerHeight / 2,
@@ -398,10 +406,10 @@ export default class Play extends Scene {
           duration: fallDuration,
         });
   
-        this.symbols[index] = newSymbol;
+        this._symbols[index] = newSymbol;
   
-        this.symbolContainer.removeChild(oldSymbol);
-        this.symbolContainer.addChild(newSymbol);
+        this._symbolContainer.removeChild(oldSymbol);
+        this._symbolContainer.addChild(newSymbol);
       }
     }
 
@@ -414,7 +422,7 @@ export default class Play extends Scene {
    * @private
    */
   _moveSymbolsDown() {
-    const size = this.config.fieldSize;
+    const size = this._config.fieldSize;
     const fallingDuration = 0.7;
     const symbolsToGenerate = [];
 
@@ -422,21 +430,21 @@ export default class Play extends Scene {
       let clearedSymbols = 0;
 
       for (let j = i; j >= 0; j -= size) {
-        if (this.symbols[j].isCleared) {
+        if (this._symbols[j].isCleared) {
           clearedSymbols++;
           continue;
         }
 
         if (!clearedSymbols) continue;
-        this.transition = true;
+        this._transition = true;
 
-        gsap.to(this.symbols[j].position, {
-          y: `+=${clearedSymbols * this.config.symbolSize}`,
+        gsap.to(this._symbols[j].position, {
+          y: `+=${clearedSymbols * this._config.symbolSize}`,
           ease: 'bounce',
           duration: fallingDuration,
         });
 
-        const newIndex = j + clearedSymbols * this.config.fieldSize;
+        const newIndex = j + clearedSymbols * this._config.fieldSize;
         this._swapSymbolsInArray(newIndex, j);
       }
       symbolsToGenerate.push(clearedSymbols);
@@ -451,12 +459,12 @@ export default class Play extends Scene {
    * @private
    */
   _swapSymbolsInArray(firstIndex, secondIndex) {
-    const tempSymbol = this.symbols[firstIndex];
+    const tempSymbol = this._symbols[firstIndex];
 
-    this.symbols[firstIndex] = this.symbols[secondIndex];
-    this.symbols[firstIndex].updateIndex(firstIndex);
-    this.symbols[secondIndex] = tempSymbol;
-    this.symbols[secondIndex].updateIndex(secondIndex);
+    this._symbols[firstIndex] = this._symbols[secondIndex];
+    this._symbols[firstIndex].updateIndex(firstIndex);
+    this._symbols[secondIndex] = tempSymbol;
+    this._symbols[secondIndex].updateIndex(secondIndex);
   }
 
   /**
@@ -465,20 +473,20 @@ export default class Play extends Scene {
    * @private
    */
   async _symbolOnPointerUp(symbol) {
-    if (this.draggedSymbol === null || this.transition) return;
+    if (this._draggedSymbol === null || this._transition) return;
 
-    gsap.to(this.draggedSymbol.scale, {
+    gsap.to(this._draggedSymbol.scale, {
       x: 1,
       y: 1,
       duration: 0.05,
       ease: 'linear',
     });
 
-    if (this.draggedSymbol.id === symbol.id) return;
+    if (this._draggedSymbol.id === symbol.id) return;
 
-    const moved = await this._moveSymbols(this.draggedSymbol, symbol);
+    const moved = await this._moveSymbols(this._draggedSymbol, symbol);
     if (!moved) {
-      this.transition = false;
+      this._transition = false;
 
       return;
     };
@@ -486,14 +494,14 @@ export default class Play extends Scene {
     const match = this._checkField();
 
     if (!match) {
-      await this._moveSymbols(this.draggedSymbol, symbol);
-      this.transition = false;
+      await this._moveSymbols(this._draggedSymbol, symbol);
+      this._transition = false;
     } else {
       window.navigator.vibrate(200);
       this._decrementMoves();
     }
     
-    this.draggedSymbol = null;
+    this._draggedSymbol = null;
   }
 
   /**
@@ -526,22 +534,22 @@ export default class Play extends Scene {
    * @param {Symbol} symbol1 first symbol
    * @param {Symbol} symbol2 second symbol
    * @private
-   * @returns {Boolean}
+   * @returns {Boolean} True if the symbols have been moved
    */
   async _moveSymbols(symbol1, symbol2) {
-    this.transition = true;
+    this._transition = true;
 
     const symbol1Coords = {
-      x: symbol1.id % this.config.fieldSize,
-      y: Math.floor(symbol1.id / this.config.fieldSize),
+      x: symbol1.id % this._config.fieldSize,
+      y: Math.floor(symbol1.id / this._config.fieldSize),
     };
     
     const symbol2Coords = {
-      x: symbol2.id % this.config.fieldSize,
-      y: Math.floor(symbol2.id / this.config.fieldSize),
+      x: symbol2.id % this._config.fieldSize,
+      y: Math.floor(symbol2.id / this._config.fieldSize),
     };
 
-    if (this.config.adjacentOnly) {
+    if (this._config.adjacentOnly) {
       if (
         !((symbol1Coords.x === symbol2Coords.x
 						&& (symbol1Coords.y === symbol2Coords.y - 1
@@ -560,15 +568,15 @@ export default class Play extends Scene {
     const ease = 'power1.inOut';
 
     gsap.to(symbol1.position, {
-      x: this.config.symbolSize * (symbol1.id % this.config.fieldSize), // symbol2.position.x,
-      y: this.config.symbolSize * (Math.floor(symbol1.id / this.config.fieldSize)), // symbol2.position.y,
+      x: this._config.symbolSize * (symbol1.id % this._config.fieldSize),
+      y: this._config.symbolSize * (Math.floor(symbol1.id / this._config.fieldSize)),
       duration: 0.3,
       ease,
     });
 
     await gsap.to(symbol2.position, {
-      x: this.config.symbolSize * (symbol2.id % this.config.fieldSize), // symbol2.position.x,
-      y: this.config.symbolSize * (Math.floor(symbol2.id / this.config.fieldSize)), // symbol2.position.y,
+      x: this._config.symbolSize * (symbol2.id % this._config.fieldSize),
+      y: this._config.symbolSize * (Math.floor(symbol2.id / this._config.fieldSize)),
       duration: 0.3,
       ease,
     });
@@ -582,10 +590,10 @@ export default class Play extends Scene {
    * @private
    */
   _symbolOnPointerDown(symbol) {
-    if (this.transition) return;
+    if (this._transition) return;
 
-    this.draggedSymbol = symbol;
-    gsap.to(this.draggedSymbol.scale, {
+    this._draggedSymbol = symbol;
+    gsap.to(this._draggedSymbol.scale, {
       x: 0.8,
       y: 0.8,
       duration: 0.05,
@@ -597,10 +605,10 @@ export default class Play extends Scene {
    * Gets a new symbol of a random type
    * @param {Number} index the index in the array of new symbol
    * @private
-   * @returns {Symbol}
+   * @returns {Symbol} Symbol
    */
   _getNewSymbol(index) {
-    const symbolType = Math.floor(Math.random() * this.config.typesOfSymbols + 1);
+    const symbolType = Math.floor(Math.random() * this._config.typesOfSymbols + 1);
     const symbol = new Symbol(symbolType, index);
 
     symbol.on('pointerdown', () => {
@@ -614,7 +622,7 @@ export default class Play extends Scene {
     });
 
     symbol.on('pointerover', () => {
-      if (this.transition) return;
+      if (this._transition) return;
       gsap.to(symbol, {
         alpha: 0.8,
         duration: 0,
@@ -636,24 +644,24 @@ export default class Play extends Scene {
    * @private
    */
   _generateNewField() {
-    if (this.symbolContainer) this.removeChild(this.symbolContainer);
+    if (this._symbolContainer) this.removeChild(this._symbolContainer);
     
     do {
-      this.symbolContainer = new Container();
-      this.symbols = [];
+      this._symbolContainer = new Container();
+      this._symbols = [];
   
-      for (let i = 0; i < this.config.fieldSize * this.config.fieldSize; i++) {
+      for (let i = 0; i < this._config.fieldSize * this._config.fieldSize; i++) {
         const symbol = this._getNewSymbol(i);
   
-        symbol.position.x = this.config.symbolSize * (i % this.config.fieldSize);
-        symbol.position.y = this.config.symbolSize * (Math.floor(i / this.config.fieldSize));
-        this.symbolContainer.addChild(symbol);
+        symbol.position.x = this._config.symbolSize * (i % this._config.fieldSize);
+        symbol.position.y = this._config.symbolSize * (Math.floor(i / this._config.fieldSize));
+        this._symbolContainer.addChild(symbol);
   
-        this.symbols.push(symbol);
+        this._symbols.push(symbol);
       }
     } while (this._checkField(true));
     
-    this.addChild(this.symbolContainer);
+    this.addChild(this._symbolContainer);
   }
 
   /**
@@ -668,10 +676,10 @@ export default class Play extends Scene {
   /**
    * Adds the Moves container to the scene
    * @private
-   * @returns {Moves}
+   * @returns {Moves} Moves container
    */
   _addMoves() {
-    const movesContainer = new Moves(this.currentMoves);
+    const movesContainer = new Moves(this._currentMoves);
     movesContainer.position.y = -window.innerHeight / 2 + 60;
 
     this.addChild(movesContainer);
@@ -682,28 +690,28 @@ export default class Play extends Scene {
   /**
    * Adds the characters to the scene.
    * @private
-   * @returns {PIXI.Container}
+   * @returns {PIXI.Container} Character container
    */
   _addCharacters() {
     const charContainer = new Container();
-    this.chars = [
+    this._chars = [
       new Character(),
       new Character(),
     ];
 
-    this.chars[0].scale.set(0.4);
-    this.chars[0].position.x = 400;
-    this.chars[0].position.y = -200;
+    this._chars[0].scale.set(0.4);
+    this._chars[0].position.x = 400;
+    this._chars[0].position.y = -200;
 
-    this.chars[1].position.x = -500;
-    this.chars[1].position.y = 50;
+    this._chars[1].position.x = -500;
+    this._chars[1].position.y = 50;
 
-    this.chars[0].hover('+=30', 4).followMouse();
-    this.chars[1].hover('+=50', 3).followMouse();
+    this._chars[0].hover('+=30', 4).followMouse();
+    this._chars[1].hover('+=50', 3).followMouse();
 
     this.blinkIntervals = [];
 
-    for (const char of this.chars) {
+    for (const char of this._chars) {
       let blinkIntervalSeconds =  Math.random() * 5 + 5;
 
       const interval = setInterval(() => {
@@ -714,7 +722,7 @@ export default class Play extends Scene {
       this.blinkIntervals.push(interval);
     }
 
-    charContainer.addChild(...this.chars);
+    charContainer.addChild(...this._chars);
     this.addChild(charContainer);
 
     return charContainer;
@@ -725,14 +733,14 @@ export default class Play extends Scene {
    * @private
    */
   _resizeField() {
-    const defaultFieldWidth = (this.config.symbolSize * this.config.fieldSize);
+    const defaultFieldWidth = (this._config.symbolSize * this._config.fieldSize);
     const scaleRatio = (window.innerHeight * 60 / 100) / defaultFieldWidth;
     const scaleRatioWidth = (window.innerWidth * 95 / 100) / defaultFieldWidth;
     const smallerRatio = scaleRatio < scaleRatioWidth ? scaleRatio : scaleRatioWidth;
-    this.symbolContainer.scale.set(smallerRatio);
-    const fieldWidth = this.symbolContainer.width;
-    this.symbolContainer.position.y = -fieldWidth / 2 + (fieldWidth / (this.config.fieldSize * 2));
-    this.symbolContainer.position.x = -fieldWidth / 2 + (fieldWidth / (this.config.fieldSize * 2));
+    this._symbolContainer.scale.set(smallerRatio);
+    const fieldWidth = this._symbolContainer.width;
+    this._symbolContainer.position.y = -fieldWidth / 2 + (fieldWidth / (this._config.fieldSize * 2));
+    this._symbolContainer.position.x = -fieldWidth / 2 + (fieldWidth / (this._config.fieldSize * 2));
   }
 
   /**
@@ -740,15 +748,15 @@ export default class Play extends Scene {
    * @private
    */
   _resizeProgressBar() {
-    this.progressBarContainer.position.y = window.innerHeight / 2 - 70;
-    const progresBarWidth = this.progressBarContainer.startingWidth + 90;
+    this._progressBarContainer.position.y = window.innerHeight / 2 - 70;
+    const progresBarWidth = this._progressBarContainer.startingWidth + 90;
 
     if (progresBarWidth > window.innerWidth) {
-      this.progressBarContainer.scale.set(window.innerWidth / progresBarWidth);
-      this.progressBarContainer.position.x = -20;
+      this._progressBarContainer.scale.set(window.innerWidth / progresBarWidth);
+      this._progressBarContainer.position.x = -20;
     } else {
-      this.progressBarContainer.scale.set(1);
-      this.progressBarContainer.position.x = 0;
+      this._progressBarContainer.scale.set(1);
+      this._progressBarContainer.position.x = 0;
     }
   }
 
@@ -758,7 +766,7 @@ export default class Play extends Scene {
    * @param  {Number} height Window height
    */
   onResize(width, height) { // eslint-disable-line no-unused-vars
-    this.movesContainer.position.y = -height / 2 + 60;
+    this._movesContainer.position.y = -height / 2 + 60;
     this._resizeProgressBar();
     this._resizeField();
   }

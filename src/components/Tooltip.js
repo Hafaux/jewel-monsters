@@ -3,28 +3,28 @@ import XpContainer from './XpContainer';
 
 /**
  * Class representing the tooltip next to the progress bar.
- * @prop {Number} xp the xp to display
- * @prop {PIXI.Sprite} tooltip the tooltip sprite
- * @prop {XpContainer} xpContainer the xp number container
+ * @prop {Number} _xp the xp to display
+ * @prop {PIXI.Sprite} _tooltip the tooltip sprite
+ * @prop {XpContainer} _xpContainer the xp number container
  */
 export default class Tooltip extends Container {
   constructor(xp = 5000) {
     super();
     
-    this.xp = xp;
+    this._xp = xp;
 
-    this.tooltip = new Sprite.from('tooltip');
-    this.tooltip.scale.set(1.2);
+    this._tooltip = new Sprite.from('tooltip');
+    this._tooltip.scale.set(1.2);
 
     const colorMatrix = new filters.ColorMatrixFilter();
     colorMatrix.blackAndWhite();
 
-    this.xpContainer = new XpContainer(this.xp);
-    this.xpContainer.scale.set(0.2);
-    this.xpContainer.position.y = 19;
-    this.xpContainer.position.x = 52;
-    this.xpContainer.filters = [colorMatrix];
+    this._xpContainer = new XpContainer(this._xp);
+    this._xpContainer.scale.set(0.2);
+    this._xpContainer.position.y = 19;
+    this._xpContainer.position.x = 52;
+    this._xpContainer.filters = [colorMatrix];
 
-    this.addChild(this.tooltip, this.xpContainer);
+    this.addChild(this._tooltip, this._xpContainer);
   }
 }

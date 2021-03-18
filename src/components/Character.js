@@ -3,24 +3,24 @@ import gsap from 'gsap';
 
 /**
  * Class representing the floating monster character.
- * @prop {PIXI.Sprite} charBody the body sprite
- * @prop {PIXI.Sprite} charEye the eye sprite
- * @prop {PIXI.Sprite} charLidBottom the bottom eyelid sprite
- * @prop {PIXI.Sprite} charLidTop the top eyelid sprite
+ * @prop {PIXI.Sprite} _charBody the body sprite
+ * @prop {PIXI.Sprite} _charEye the eye sprite
+ * @prop {PIXI.Sprite} _charLidBottom the bottom eyelid sprite
+ * @prop {PIXI.Sprite} _charLidTop the top eyelid sprite
  */
 export default class Character extends Container {
   constructor() {
     super();
 
     this.name = 'character';
-    this.charBody = new Sprite.from('char-body');
-    this.charBody.name = 'char-body';
-    this.charEye = new Sprite.from('char-eye');
-    this.charEye.name = 'char-eye';
-    this.charLidBottom = new Sprite.from('char-lid-bottom');
-    this.charLidBottom.name = 'char-lid-bottom';
-    this.charLidTop = new Sprite.from('char-lid-top');
-    this.charLidTop.name = 'char-lid-top';
+    this._charBody = new Sprite.from('char-body');
+    this._charBody.name = 'char-body';
+    this._charEye = new Sprite.from('char-eye');
+    this._charEye.name = 'char-eye';
+    this._charLidBottom = new Sprite.from('char-lid-bottom');
+    this._charLidBottom.name = 'char-lid-bottom';
+    this._charLidTop = new Sprite.from('char-lid-top');
+    this._charLidTop.name = 'char-lid-top';
 
     this._init();
   }
@@ -30,20 +30,20 @@ export default class Character extends Container {
    * @private
    */
   _init() {
-    this.charBody.anchor.set(0.5);
-    this.charEye.anchor.set(0.5);
-    this.charLidBottom.anchor.set(0.5, 1);
-    this.charLidTop.anchor.set(0.5, 0);
+    this._charBody.anchor.set(0.5);
+    this._charEye.anchor.set(0.5);
+    this._charLidBottom.anchor.set(0.5, 1);
+    this._charLidTop.anchor.set(0.5, 0);
 
-    this.charEye.position.y = -20;
-    this.charLidTop.position.y = -60;
-    this.charLidBottom.position.y = 20;
+    this._charEye.position.y = -20;
+    this._charLidTop.position.y = -60;
+    this._charLidBottom.position.y = 20;
 
     this.addChild(
-      this.charBody,
-      this.charEye,
-      this.charLidBottom,
-      this.charLidTop,
+      this._charBody,
+      this._charEye,
+      this._charLidBottom,
+      this._charLidTop,
     );
 
     this.tl = new gsap.timeline();
@@ -53,7 +53,7 @@ export default class Character extends Container {
    * Plays the blinking nimation
    */
   blink() {
-    const eyelidsScale = [this.charLidTop, this.charLidBottom].map((c) => c.scale);
+    const eyelidsScale = [this._charLidTop, this._charLidBottom].map((c) => c.scale);
     this.tl.to(eyelidsScale, {
       y: 1.4,
       yoyo: true,
@@ -67,7 +67,7 @@ export default class Character extends Container {
    * Eyes widening animation
    */
   openEyesWide() {
-    const eyelidsScale = [this.charLidTop, this.charLidBottom].map((c) => c.scale);
+    const eyelidsScale = [this._charLidTop, this._charLidBottom].map((c) => c.scale);
     this.tl
       .to(eyelidsScale, {
         y: 0.2,
@@ -116,8 +116,8 @@ export default class Character extends Container {
       y: -(eyeMiddlePos.y - e.pageY) / 120 - 20,
     };
 
-    this.charEye.position.x = eyePos.x;
-    this.charEye.position.y = eyePos.y;
+    this._charEye.position.x = eyePos.x;
+    this._charEye.position.y = eyePos.y;
   }
 
   /**
@@ -146,8 +146,8 @@ export default class Character extends Container {
    * @returns {Character}
    */
   openEyes() {
-    this.charLidBottom.visible = false;
-    this.charLidTop.visible = false;
+    this._charLidBottom.visible = false;
+    this._charLidTop.visible = false;
 
     return this;
   }
@@ -157,8 +157,8 @@ export default class Character extends Container {
    * @returns {Character}
    */
   closeEyes() {
-    this.charLidBottom.visible = true;
-    this.charLidTop.visible = true;
+    this._charLidBottom.visible = true;
+    this._charLidTop.visible = true;
 
     return this;
   }

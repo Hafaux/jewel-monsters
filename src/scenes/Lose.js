@@ -45,9 +45,9 @@ export default class Lose extends Scene {
    * @private
    */
   _addLabel() {
-    this.labelContainer = new Label('label-failed');
+    this._labelContainer = new Label('label-failed');
 
-    gsap.fromTo(this.labelContainer.position, {
+    gsap.fromTo(this._labelContainer.position, {
       y: -window.innerHeight / 2,
     }, {
       y: 0,
@@ -55,9 +55,9 @@ export default class Lose extends Scene {
       duration: 1,
     });
 
-    this.addChild(this.labelContainer);
+    this.addChild(this._labelContainer);
 
-    this.labelContainer.startingWidth = this.labelContainer.width;
+    this._labelContainer.startingWidth = this._labelContainer.width;
   }
 
   /**
@@ -70,7 +70,7 @@ export default class Lose extends Scene {
       y: 0,
     }, {
       y: 220,
-      ease: 'bounce',
+      ease: 'back',
       duration: 1
     });
     this.addChild(prompt);
@@ -85,13 +85,13 @@ export default class Lose extends Scene {
    * @private
    */
   _resizeScene() {
-    const labelWidth = this.labelContainer.startingWidth;
+    const labelWidth = this._labelContainer.startingWidth;
 
     if (labelWidth > window.innerWidth) {
       const scale = (window.innerWidth / (labelWidth + 20));
-      this.labelContainer.scale.set(scale);
+      this._labelContainer.scale.set(scale);
     } else {
-      this.labelContainer.scale.set(1);
+      this._labelContainer.scale.set(1);
     }
   }
   

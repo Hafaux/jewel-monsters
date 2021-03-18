@@ -2,17 +2,17 @@ import { Container, Sprite } from 'pixi.js';
 
 /**
  * Class representing the number sprites.
- * @prop {Number} integer integer number
- * @prop {(PIXI.Container|null)} digitContainer element containing the number sprites
+ * @prop {Number} _integer integer number
+ * @prop {(PIXI.Container|null)} _digitContainer element containing the number sprites
  */
 export default class NumberContainer extends Container {
   constructor(integer) {
     super();
 
-    this.integer = integer;
-    this.digitContainer = null;
+    this._integer = integer;
+    this._digitContainer = null;
 
-    this.updateNumber(this.integer);
+    this.updateNumber(this._integer);
   }
 
   /**
@@ -20,11 +20,11 @@ export default class NumberContainer extends Container {
    * @param {Number} num integer number
    */
   updateNumber(num) {
-    if (this.digitContainer) this.removeChild(this.digitContainer);
-    this.digitContainer = new Container();
+    if (this._digitContainer) this.removeChild(this._digitContainer);
+    this._digitContainer = new Container();
 
     this._addDigits(num);
-    this.addChild(this.digitContainer);
+    this.addChild(this._digitContainer);
   }
 
   /**
@@ -37,12 +37,12 @@ export default class NumberContainer extends Container {
 
     if (num === 0) {
       const digitSprite = this._getDigitSprite(0, digitOffset);
-      this.digitContainer.addChild(digitSprite);
+      this._digitContainer.addChild(digitSprite);
     } else {
       while (num > 0) {
         const currentDigit = num % 10;
         const digitSprite = this._getDigitSprite(currentDigit, digitOffset);
-        this.digitContainer.addChild(digitSprite);
+        this._digitContainer.addChild(digitSprite);
   
         num = Math.floor(num / 10);
         digitOffset -= 60;

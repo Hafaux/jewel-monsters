@@ -3,20 +3,20 @@ import NumberContainer from './NumberContainer';
 
 /**
  * Class representing the container showing the current moves.
- * @prop {Number} numMoves Amount of moves to show
- * @prop {PIXI.Sprite} background Moves container background
- * @prop {PIXI.Sprite} movesText The text sprite saying "moves"
- * @prop {NumberContainer} numberContainer the moves number container
+ * @prop {Number} _numMoves Amount of moves to show
+ * @prop {PIXI.Sprite} _background Moves container background
+ * @prop {PIXI.Sprite} _movesText The text sprite saying "moves"
+ * @prop {NumberContainer} _numberContainer the moves number container
  */
 export default class Moves extends Container {
   constructor(numMoves) {
     super();
-    this.numMoves = numMoves;
+    this._numMoves = numMoves;
 
-    this.background = new Sprite.from('moves-bg');
-    this.movesText = new Sprite.from('moves');
+    this._background = new Sprite.from('moves-bg');
+    this._movesText = new Sprite.from('moves');
 
-    this.numberContainer = new NumberContainer(this.numMoves);
+    this._numberContainer = new NumberContainer(this._numMoves);
 
     this._init();
   }
@@ -26,20 +26,20 @@ export default class Moves extends Container {
    * @private
    */
   _init() {
-    this.background.anchor.set(0.5);
-    this.movesText.anchor.set(0.5, 1);
-    this.movesText.position.y = -20;
-    this.numberContainer.scale.set(0.8);
-    this.numberContainer.position.x = 22;
-    this.numberContainer.position.y = 10;
+    this._background.anchor.set(0.5);
+    this._movesText.anchor.set(0.5, 1);
+    this._movesText.position.y = -20;
+    this._numberContainer.scale.set(0.8);
+    this._numberContainer.position.x = 22;
+    this._numberContainer.position.y = 10;
 
     const colorMatrix = new filters.ColorMatrixFilter();
     colorMatrix.blackAndWhite();
-    this.numberContainer.filters = [colorMatrix];
-    this.movesText.filters = [colorMatrix];
+    this._numberContainer.filters = [colorMatrix];
+    this._movesText.filters = [colorMatrix];
 
-    this.updateMoves(this.numMoves);
-    this.addChild(this.background, this.movesText, this.numberContainer);
+    this.updateMoves(this._numMoves);
+    this.addChild(this._background, this._movesText, this._numberContainer);
   }
 
   /**
@@ -47,7 +47,7 @@ export default class Moves extends Container {
    * @param {Number} moves number of moves
    */
   updateMoves(moves) {
-    if (moves < 10) this.numberContainer.x = 0;
-    this.numberContainer.updateNumber(moves);
+    if (moves < 10) this._numberContainer.x = 0;
+    this._numberContainer.updateNumber(moves);
   }
 }

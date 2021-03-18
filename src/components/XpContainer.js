@@ -3,7 +3,7 @@ import NumberContainer from './NumberContainer';
 
 /**
  * Class representing an XP container, containing number sprites and XP letter sprites.
- * @prop {Number} xp Amount of xp to display
+ * @prop {Number} _xp Amount of xp to display
  */
 export default class XpContainer extends Container {
   /**
@@ -11,7 +11,7 @@ export default class XpContainer extends Container {
    */
   constructor(xp) {
     super();
-    this.xp = xp;
+    this._xp = xp;
 
     this._init();
   }
@@ -47,7 +47,7 @@ export default class XpContainer extends Container {
    * @private
    */
   _addNumberContainer() {
-    this.numberContainer = new NumberContainer(this.xp);
+    this.numberContainer = new NumberContainer(this._xp);
 
     this.addChild(this.numberContainer);
   }
@@ -57,7 +57,7 @@ export default class XpContainer extends Container {
    * @param {Number} newXp New xp to show
    */
   updateXp(newXp) {
-    this.xp = newXp;
-    this.numberContainer.updateNumber(this.xp);
+    this._xp = newXp;
+    this.numberContainer.updateNumber(this._xp);
   }
 }

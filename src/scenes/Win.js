@@ -15,7 +15,7 @@ export default class Win extends Scene {
     super();
 
     this._addXpSprites();
-    this.charContainer = this._addCharacters();
+    this._charContainer = this._addCharacters();
     this._addLabel(); 
     this._addPrompt();
     
@@ -42,7 +42,7 @@ export default class Win extends Scene {
   _restartGame() {
     window.removeEventListener('keydown', this._keyDownHandler);
 
-    this.characters.forEach((char) => {
+    this._characters.forEach((char) => {
       char.unfollowMouse();
     });
 
@@ -56,36 +56,36 @@ export default class Win extends Scene {
    */
   _addCharacters() {
     const charContainer = new Container();
-    this.characters = [
+    this._characters = [
       new Character(),
       new Character(),
       new Character(),
     ];
 
-    this.characters[0].position.x = -250;
-    this.characters[0].position.y = -200;
-    this.characters[1].position.x = -50;
-    this.characters[1].position.y = -300;
-    this.characters[2].position.x = 200;
-    this.characters[2].position.y = -250;
+    this._characters[0].position.x = -250;
+    this._characters[0].position.y = -200;
+    this._characters[1].position.x = -50;
+    this._characters[1].position.y = -300;
+    this._characters[2].position.x = 200;
+    this._characters[2].position.y = -250;
 
-    this.characters[0].scale.set(0.6);
-    this.characters[1].scale.set(0.4);
-    this.characters[2].scale.set(0.8);
+    this._characters[0].scale.set(0.6);
+    this._characters[1].scale.set(0.4);
+    this._characters[2].scale.set(0.8);
 
-    gsap.from(this.characters.map((char) => char.position), {
+    gsap.from(this._characters.map((char) => char.position), {
       y: '-=500',
       duration: 1,
       stagger: 0.2,
       ease: 'back',
       onComplete: () => {
-        this.characters[0].hover('-=40', 3);
-        this.characters[1].hover('-=30', 2);
-        this.characters[2].hover('-=20', 4);
+        this._characters[0].hover('-=40', 3);
+        this._characters[1].hover('-=30', 2);
+        this._characters[2].hover('-=20', 4);
       }
     });
 
-    this.characters.forEach((character) => {
+    this._characters.forEach((character) => {
       character.openEyes();
       character.followMouse();
       charContainer.addChild(character);
@@ -101,7 +101,7 @@ export default class Win extends Scene {
    * @private
    */
   _addXpSprites() {
-    this.xpContainer = new Container();
+    this._xpContainer = new Container();
     const sprites = [
       new Sprite.from('xp'),
       new Sprite.from('xp'),
@@ -112,10 +112,10 @@ export default class Win extends Scene {
       sprite.position.y = -50;
       sprite.alpha = 0;
       sprite.anchor.set(0.5);
-      this.xpContainer.addChild(sprite);
+      this._xpContainer.addChild(sprite);
     });
 
-    this.addChild(this.xpContainer);
+    this.addChild(this._xpContainer);
 
     sprites[1].scale.set(0.4);
     sprites[2].scale.set(0.4);
@@ -137,9 +137,9 @@ export default class Win extends Scene {
    * @private
    */
   _addLabel() {
-    this.labelContainer = new Label('label-passed');
+    this._labelContainer = new Label('label-passed');
 
-    gsap.fromTo(this.labelContainer.position, {
+    gsap.fromTo(this._labelContainer.position, {
       y: -window.innerHeight / 2,
     }, {
       y: 0,
@@ -147,9 +147,9 @@ export default class Win extends Scene {
       duration: 1,
     });
 
-    this.addChild(this.labelContainer);
+    this.addChild(this._labelContainer);
 
-    this.labelContainer.startingWidth = this.labelContainer.width;
+    this._labelContainer.startingWidth = this._labelContainer.width;
   }
 
   /**
@@ -162,7 +162,7 @@ export default class Win extends Scene {
       y: 0,
     }, {
       y: 220,
-      ease: 'bounce',
+      ease: 'back',
       duration: 1
     });
     this.addChild(prompt);
@@ -177,17 +177,17 @@ export default class Win extends Scene {
    * @private
    */
   _resizeScene() {
-    const labelWidth = this.labelContainer.startingWidth;
+    const labelWidth = this._labelContainer.startingWidth;
 
     if (labelWidth > window.innerWidth) {
       const scale = (window.innerWidth / (labelWidth + 20));
-      this.labelContainer.scale.set(scale);
-      this.charContainer.scale.set(scale);
-      this.xpContainer.scale.set(scale);
+      this._labelContainer.scale.set(scale);
+      this._charContainer.scale.set(scale);
+      this._xpContainer.scale.set(scale);
     } else {
-      this.labelContainer.scale.set(1);
-      this.charContainer.scale.set(1);
-      this.xpContainer.scale.set(1);
+      this._labelContainer.scale.set(1);
+      this._charContainer.scale.set(1);
+      this._xpContainer.scale.set(1);
     }
   }
   

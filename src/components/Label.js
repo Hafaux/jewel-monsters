@@ -8,9 +8,9 @@ export default class Label extends Container {
   constructor(spriteName) {
     super();
 
-    this.label = new Sprite.from(spriteName);
-    this.label.anchor.set(0.5);
+    this._label = new Sprite.from(spriteName);
+    this._label.anchor.set(0.5);
 
-    this.addChild(this.label);
+    this.addChild(this._label);
   }
 }
