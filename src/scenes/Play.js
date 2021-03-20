@@ -9,7 +9,6 @@ import XpContainer from '../components/XpContainer';
 import Tooltip from '../components/Tooltip';
 import config from '../config';
 import Assets from '../core/AssetManager';
-import { fitMaxScale } from '../core/utils';
 
 /**
  * Class representing the main scene of the game.
@@ -45,6 +44,7 @@ export default class Play extends Scene {
     this._currentMoves = this._config.maxMoves;
     this._currentXp = 0;
 
+    this._fireContainer = this.addFire();
     this._charContainer = this._addCharacters();
     this._movesContainer = this._addMoves();
     this._xpContainer = null;
@@ -52,7 +52,6 @@ export default class Play extends Scene {
     this._addProgressBar();
     this._addSymbolContainer();
     this._onSceneEnter();
-    this.addFire();
   }
 
   /**
@@ -61,6 +60,7 @@ export default class Play extends Scene {
    * @returns {Promise} Tween
    */
   async _onSceneEnter() {
+    this.onResize();
     this._transition = true;
 
     const elements = [
@@ -554,11 +554,11 @@ export default class Play extends Scene {
     if (this._config.adjacentOnly) {
       if (
         !((symbol1Coords.x === symbol2Coords.x
-						&& (symbol1Coords.y === symbol2Coords.y - 1
-							|| symbol1Coords.y === symbol2Coords.y + 1))
-					|| (symbol1Coords.y === symbol2Coords.y
-						&& (symbol1Coords.x === symbol2Coords.x - 1
-							|| symbol1Coords.x === symbol2Coords.x + 1)))
+            && (symbol1Coords.y === symbol2Coords.y - 1
+              || symbol1Coords.y === symbol2Coords.y + 1))
+          || (symbol1Coords.y === symbol2Coords.y
+            && (symbol1Coords.x === symbol2Coords.x - 1
+              || symbol1Coords.x === symbol2Coords.x + 1)))
       ) {
         this._shakeElement(symbol1);
 
@@ -767,6 +767,21 @@ export default class Play extends Scene {
   }
 
   /**
+   * Resizes the fire to match the background.
+   * @private
+   */
+  _resizeFire() {
+    const ratio = this.background.width / 1920;
+    this._fireContainer.scale.set(ratio);
+  }
+
+  _resizeMovesContainer() {
+    const ratio = window.innerHeight / 1080;
+    this._movesContainer.scale.set(ratio);
+    this._movesContainer.position.y = -window.innerHeight / 2 + (60 * ratio);
+  }
+
+  /**
    * Hook called by the application when the browser window is resized.
    * @param  {Number} width  Window width
    * @param  {Number} height Window height
@@ -775,6 +790,7 @@ export default class Play extends Scene {
     this._movesContainer.position.y = -height / 2 + 60;
     this._resizeProgressBar();
     this._resizeField();
-    fitMaxScale(this.background, { width, height });
+    this._resizeFire();
+    this._resizeMovesContainer();
   }
 }

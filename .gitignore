@@ -2,3 +2,4 @@ node_modules/
 dist/
 src/components/FireEmitterConfig.js
 cypress/videos
+.vscode/

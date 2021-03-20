@@ -1,11 +1,18 @@
-# ⚙ PIXI Boilerplate
-This project is used as a boilerplate for tasks in the "PIXI.js" course in Booost. Takes care of loading assets and intiliazing the scene. Just drop your images and sounds, set your viewport size and start coding. This is a fork of [PIXI.js Boilerplate](https://github.com/dopamine-lab/pixi-boilerplate)
+# 💎 Jewel Monsters 💎
+[<img src="https://img.shields.io/badge/ooo-zdr-yellow">](https://booost.bg/)
 
-Includes:
-* 📦 Bundling via Webpack
-* 🏝 Scene management
-* ✨ Out of the box loader with progress bar, see `src/scenes/Splash.js`
-* 📐 Viewport fitting and resize handling, see `Application.setupViewport()` in `src/core/Application.js`
+The Jewel Monsters game project from www.booost.bg. Implemented using [PIxiJS](https://www.pixijs.com/), [GSAP](https://greensock.com/gsap/) and [howler.js](https://howlerjs.com/).
+
+Jewel Monsters is a Match 3 type game, where the goal is to create clusters of three or more identical items either horizontally or vertically.
+
+You can change the dimensions of the symbols grid, the number of moves available, whether the moves are adjacent only and the maximum XP needed in the `config.js` file.
+
+Features:
+* 💻 Responsive design
+* 📱 Touch device support
+* 🔊 Sounds
+* 📳 Vibration (on supported devices)
+
 
 ## Available Commands
 
@@ -13,6 +20,8 @@ Includes:
 |---------|-------------|
 | `npm install` | Install project dependencies |
 | `npm start` | Build project and open web server running project |
+| `npm test` | Run Cypress tests |
+| `npm run cy:open` | Opens the Cypress Test Runner |
 | `npm run build` | Builds code bundle with production settings (minification, uglification, etc..) |
 
 ## Writing Code

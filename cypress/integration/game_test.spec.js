@@ -1,7 +1,7 @@
 /* eslint-disable */
 /// <reference types="cypress" />
 
-context('Actions', () => {
+context('Game Tests', () => {
   it('should load', () => {
     cy.visit('/');
     cy.getPixiApp().then((app) => {

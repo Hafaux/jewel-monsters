@@ -1,6 +1,8 @@
 import Assets from '../core/AssetManager';
 import { Container } from 'pixi.js';
 import Fire from '../components/Fire';
+import config from '../config';
+
 /**
  * Scene abstract class, defines common scene methods
  * and implements assets preload method.
@@ -23,18 +25,18 @@ export default class Scene extends Container {
    * Adds the fire sprites to the scene.
    */
   addFire() {
+    const fireContainer = new Container();
     const fire1 = new Fire();
     const fire2 = new Fire();
-    const offsetY = 110;
-    const offsetX = 680;
 
-    fire1.position.x = -offsetX;
-    fire1.position.y = offsetY;
-    fire2.position.x = offsetX + 40;
-    fire2.position.y = offsetY;
+    fire1.position.set(config.sprites.fire1Pos.x, config.sprites.fire1Pos.y);
+    fire2.position.set(config.sprites.fire2Pos.x, config.sprites.fire2Pos.y);
 
-    this.addChild(fire1);
-    this.addChild(fire2);
+    fireContainer.addChild(fire1);
+    fireContainer.addChild(fire2);
+    this.addChild(fireContainer);
+
+    return fireContainer;
   }
 
   /**

@@ -16,6 +16,16 @@ export default {
     decelerate: true,
     wheel: false,
   },
+  sprites: {
+    fire1Pos: {
+      x: -680,
+      y: 110,
+    },
+    fire2Pos: {
+      x: 720,
+      y: 110
+    }
+  },
   scenes: {
     Loading: {
       hideDelay: 0,
