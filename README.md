@@ -1,7 +1,9 @@
 # 💎 Jewel Monsters 💎
+![preview](https://github.com/Hafaux/jewel-monsters/raw/master/src/assets/Preview/preview.gif)
+
 [<img src="https://img.shields.io/badge/ooo-zdr-yellow">](https://booost.bg/)
 
-The Jewel Monsters game project from www.booost.bg. Implemented using [PIxiJS](https://www.pixijs.com/), [GSAP](https://greensock.com/gsap/) and [howler.js](https://howlerjs.com/).
+The Jewel Monsters game project at www.booost.bg. Implemented using [PIxiJS](https://www.pixijs.com/), [GSAP](https://greensock.com/gsap/) and [howler.js](https://howlerjs.com/).
 
 Jewel Monsters is a Match 3 type game, where the goal is to create clusters of three or more identical items either horizontally or vertically.
 
